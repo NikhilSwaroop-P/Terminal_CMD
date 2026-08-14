@@ -58,7 +58,7 @@ pub const FISH_INTEGRATION: &str = r#"
 function __termcmd_prompt --on-event fish_prompt
     set -g __termcmd_in_prompt 1
     printf "\033]133;A\007"
-    printf "\033]7;file://%s%s\007" (hostname 2>/dev/null || echo localhost) (pwd)
+    printf "\033]7;file://%s%s\007" "$hostname" "$PWD"
 end
 
 function __termcmd_preexec --on-event fish_preexec

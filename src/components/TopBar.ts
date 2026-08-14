@@ -37,7 +37,10 @@ export class TopBar {
     newTermBtn.className = 'btn-primary';
     newTermBtn.innerHTML = '<span>+</span> NEW TERMINAL';
     newTermBtn.title = 'Spawn New Terminal (Ctrl+Alt+N)';
-    newTermBtn.onclick = () => this.callbacks.onNewTerminal();
+    newTermBtn.onclick = () => {
+      newTermBtn.blur();
+      this.callbacks.onNewTerminal();
+    };
 
     left.appendChild(sidebarToggleBtn);
     left.appendChild(newTermBtn);

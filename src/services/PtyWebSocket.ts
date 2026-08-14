@@ -122,7 +122,7 @@ export class PtyWebSocket {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       return;
     }
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 8000);
+    const delay = Math.min(100 * Math.pow(1.5, this.reconnectAttempts), 1000);
     this.reconnectAttempts++;
     this.reconnectTimer = window.setTimeout(() => {
       this.connect();

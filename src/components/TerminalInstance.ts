@@ -131,6 +131,19 @@ export class TerminalInstance {
   }
 
   private setupEventPiping(): void {
+    this.ws.onOpen(() => {
+      this.fit();
+      this.focus();
+    });
+
+    this.container.addEventListener('mousedown', () => {
+      this.focus();
+    });
+
+    this.xtermElement.addEventListener('mousedown', () => {
+      this.focus();
+    });
+
     this.term.onData((data) => {
       if (
         data.startsWith('\x1b]10;') ||

@@ -171,18 +171,16 @@ async fn run_exec_stream(
                     }
 
                     Ok(SessionEvent::Osc(OscEvent::CommandFinished { exit_code })) => {
-                        if command_started || start_instant.elapsed() > Duration::from_millis(800) || exit_code != 0 {
-                            let done_payload = ExecDonePayload {
-                                exit_code,
-                                duration_ms: start_instant.elapsed().as_millis() as u64,
-                                command: payload.command.clone(),
-                                cwd: session.cwd().to_string_lossy().to_string(),
-                            };
-                            if let Ok(data) = serde_json::to_string(&done_payload) {
-                                let _ = tx.send(Ok(Event::default().event("done").data(data))).await;
-                            }
-                            break;
+                        let done_payload = ExecDonePayload {
+                            exit_code,
+                            duration_ms: start_instant.elapsed().as_millis() as u64,
+                            command: payload.command.clone(),
+                            cwd: session.cwd().to_string_lossy().to_string(),
+                        };
+                        if let Ok(data) = serde_json::to_string(&done_payload) {
+                            let _ = tx.send(Ok(Event::default().event("done").data(data))).await;
                         }
+                        break;
                     }
 
                     Ok(SessionEvent::Terminated { exit_code }) => {
