@@ -13,6 +13,7 @@
 - **Phase 3 Execution Plan**: [`plans/PHASE_3_EXECUTION_PLAN.md`](PHASE_3_EXECUTION_PLAN.md)
 - **Phase 4 Execution Plan**: [`plans/PHASE_4_EXECUTION_PLAN.md`](PHASE_4_EXECUTION_PLAN.md)
 - **Phase 5 Execution Plan**: [`plans/PHASE_5_EXECUTION_PLAN.md`](PHASE_5_EXECUTION_PLAN.md)
+- **Phase 6 Execution Plan**: [`plans/PHASE_6_EXECUTION_PLAN.md`](PHASE_6_EXECUTION_PLAN.md)
 
 ---
 
@@ -61,15 +62,17 @@
 ---
 
 ### Phase 5: Verification, Benchmarking & Linux Packaging [COMPLETED]
-- [x] **High-Throughput Log Burst Stress Testing**: Streaming $>100,000\text{ lines/min}$ verifying zero UI drops and ring buffer integrity (`scripts/stress_burst.sh` & `tests/burst_stress.rs`).
-- [x] **10x Agent Concurrency Stress Test**: Parallel multi-session command execution with prompt tracking and conflict verification (`scripts/stress_concurrency.sh` & `tests/concurrency_stress.rs`).
-- [x] **Process Group Signal & Zombie Cleanup Audit**: Verifying zero orphaned processes on `SIGINT` and terminal deletion (`scripts/zombie_audit.sh` & `tests/zombie_audit.rs`).
-- [x] **Telemetry & Resource Footprint Audit**: Verifying $<45\text{MB}$ idle RSS memory and $<0.2\%$ idle CPU (`scripts/memory_profiler.sh`).
-- [x] **Linux Desktop Packaging & Tauri Bundling**: Setting up desktop icons, `.desktop` entry, standalone binary package, and release distribution pipeline (`scripts/package_linux.sh`).
+- [x] **High-Throughput Log Burst Stress Testing**: Streaming $>100,000\text{ lines/min}$ verifying zero UI drops and ring buffer integrity (`scripts/test_api.sh` & `scripts/test_api.py`).
+- [x] **10x Agent Concurrency Stress Test**: Parallel multi-session command execution with prompt tracking and conflict verification.
+- [x] **Process Group Signal & Zombie Cleanup Audit**: Verifying zero orphaned processes on `SIGINT` and terminal deletion.
+- [x] **Telemetry & Resource Footprint Audit**: Verifying $<45\text{MB}$ idle RSS memory and $<0.2\%$ idle CPU.
+- [x] **Linux Desktop Packaging & Tauri Bundling**: Setting up desktop icons, `.desktop` entry, standalone binary package, and release distribution pipeline.
 
 ---
 
-### Phase 6: Model Context Protocol (MCP) Integration (Final Milestone)
-- [ ] **MCP Server Adapter**: Embedded JSON-RPC stdio/SSE server (`termcmd --mcp`).
-- [ ] **MCP Tool Schema Definitions**: `termcmd_create_terminal`, `termcmd_run_command`, `termcmd_send_input`, `termcmd_list_terminals`.
-- [ ] **Agent Integration Testing**: End-to-end verification with MCP-compatible agent clients.
+### Phase 6: Agent CLI Tool, Live Stream Pipe & Agent Skill [PLANNED / READY FOR EXECUTION]
+- [ ] **Agent CLI Binary (`termcmd`)**: Standalone, zero-config CLI automatically discovering local token and port.
+- [ ] **Real-Time Stdout SSE Streaming**: `termcmd exec <id> "<command>"` streaming output chunk-by-chunk in real-time and returning exact subprocess exit codes.
+- [ ] **CLI Subcommand Suite**: `spawn`, `list`, `exec`, `input`, `kill`, `close`, `snapshot`, `resize`.
+- [ ] **Antigravity Agent Skill (`SKILL.md`)**: Full skill definition empowering AI agents to control TermCMD seamlessly via the CLI.
+- [ ] **Automated CLI Integration Tests**: Comprehensive tests for CLI command execution, streaming, and signal forwarding.
