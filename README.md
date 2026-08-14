@@ -51,6 +51,15 @@
 - **Concurrency & Conflict Guards**: Returns `409 Conflict` when multiple agents attempt concurrent execution on the same active PTY session.
 - **Bearer Token Security Guard**: Automatically generates and persists session-scoped bearer tokens with restrictive `0600` POSIX permissions and loopback CORS enforcement.
 
+### 💻 Universal Agent CLI (`termcli` / `termcmd-cli`)
+- **Zero-Configuration Discovery**: Auto-resolves running token and port via `$TERMCMD_TOKEN`, XDG runtime directory (`$XDG_RUNTIME_DIR/termcmd.token`), user config, and POSIX `/tmp` fallbacks.
+- **Real-Time Live Streaming**: `termcli exec <id> "<cmd>"` pipes stdout chunks live in real-time and propagates subprocess exit codes.
+- **Complete CLI Suite**: Includes `spawn`, `list`, `exec`, `input`, `kill` (signal forwarding + `-f` force close), `close` (`rm` / `delete`), `snapshot`, and `resize`.
+
+### 🧠 Universal AI Agent Skill (`skills/termcmd/SKILL.md`)
+- **Cross-Framework Compatible**: Standard YAML frontmatter + markdown skill compatible with Antigravity, Claude Code, Cursor, Cline, OpenCode, and Aider.
+- **Autonomous Multi-Terminal Workflows**: Step-by-step guidance for AI agents to spawn isolated terminals, run long-lived servers, stream commands, and answer interactive prompts.
+
 ### ⚙️ Robust PTY Core & Process Lifecycle
 - **Semantic Shell Hooks (OSC 7 / OSC 133)**: Zero-config auto-injection for Bash, Zsh, and Fish to track working directory changes (`OSC 7`), command execution boundaries (`OSC 133;A/B/C/D`), and exit codes.
 - **50,000-Line Circular Ring Buffer**: Bounded, circular lock-free line buffer per terminal session with FIFO eviction to prevent memory bloat under massive log bursts.
@@ -99,6 +108,9 @@ gantt
     section Phase 5 - Verification & Packaging
     High-Throughput Burst Stress Tests   :done, 2026-08-14, 1d
     Linux Desktop Launcher & Tarball     :done, 2026-08-15, 1d
+    section Phase 6 - Agent CLI & Skill
+    Universal CLI (termcli)              :done, 2026-08-15, 1d
+    Universal Agent Skill (SKILL.md)     :done, 2026-08-15, 1d
     v0.1.0 Release                       :done, 2026-08-15, 1d
     section Future Enhancements
     Tiling Layouts (Master-Stack)        :active, 2026-08-16, 7d
@@ -111,9 +123,11 @@ gantt
 - [x] Semantic shell integration (`OSC 7` for cwd, `OSC 133` for command boundaries and exit codes).
 - [x] Axum Agent API on `127.0.0.1:7890` with Bearer auth, REST CRUD, SSE `/exec`, and WebSocket `/ws`.
 - [x] Tauri 2.0 Desktop Canvas with WebGL hardware acceleration and Kitty cursor spring physics.
+- [x] Universal Agent CLI (`termcli` / `termcmd-cli`) with zero-config discovery and live SSE streaming.
+- [x] Universal Agent Skill (`skills/termcmd/SKILL.md`) for AI coding assistant integration.
 - [x] High-throughput burst stress suite (3.6M lines/min stream verification).
 - [x] Process group lifecycle isolation with zero zombie process guarantees.
-- [x] Standalone Linux tarball packaging and XDG desktop launcher integration.
+- [x] Standalone Linux tarball packaging, XDG desktop launcher, and complete installer.
 
 ### 🚧 In Progress / Future Roadmap
 - [ ] **Tiling Layout Modes**: Automated Master-Stack, Golden Ratio, and Equal Grid split layouts.
