@@ -118,8 +118,16 @@ function __termcmd_postexec --on-event fish_postexec
     end
 end
 
+set -g fish_cursor_default line
+set -g fish_cursor_insert line
+set -g fish_cursor_replace_one underscore
+set -g fish_cursor_replace underscore
+set -g fish_cursor_external line
+set -g fish_cursor_visual block
+
 function __termcmd_prompt_render --on-event fish_postexec
     set -e __termcmd_in_prompt
+    printf "\033[5 q"
     printf "\033]133;A\007"
     printf "\033]7;file://%s%s\007" (hostname) (pwd)
     if not set -q __termcmd_dir_synced
@@ -131,6 +139,7 @@ end
 if not set -q __termcmd_dir_synced
     set -g __termcmd_dir_synced 1
     __termcmd_sync_dir_history
+    printf "\033[5 q"
     printf "\033]133;A\007"
     printf "\033]7;file://%s%s\007" (hostname) (pwd)
 end

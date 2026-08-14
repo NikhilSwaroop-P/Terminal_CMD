@@ -25,6 +25,7 @@ export class TerminalInstance {
   private ws: PtyWebSocket;
   private cursorTrail: CursorTrail;
   private searchOverlay: SearchOverlay;
+  private themeService: ThemeService = ThemeService.getInstance();
   private unsubscribeTheme: (() => void) | null = null;
   private isDisposed = false;
 
@@ -103,6 +104,23 @@ export class TerminalInstance {
       this.term.options.cursorBlink = newSettings.cursorBlink;
       this.canvasOverlay.style.display = newSettings.cursorTrail ? 'block' : 'none';
       this.fit();
+    });
+
+    this.term.parser.registerOscHandler(133, (data) => {
+      if (data === 'A' || data.startsWith('A;') || data.startsWith('D')) {
+        const currentSettings = this.themeService.getSettings();
+        this.term.options.cursorStyle = currentSettings.cursorStyle;
+      }
+      return false;
+    });
+
+    this.term.parser.registerCsiHandler({ final: 'q' }, (params) => {
+      const p = params[0] || 0;
+      if (p === 0) {
+        this.term.options.cursorStyle = this.themeService.getSettings().cursorStyle;
+        return true;
+      }
+      return false;
     });
 
     this.setupEventPiping();

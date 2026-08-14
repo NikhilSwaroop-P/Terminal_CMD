@@ -536,13 +536,29 @@ export class Canvas {
    * Synchronizes external list of terminals.
    */
   public syncTerminals(terminals: TerminalSessionInfo[]): void {
+    const remoteIds = new Set(terminals.map((t) => t.id));
+
     terminals.forEach((info) => {
-      this.sessionInfos.set(info.id, info);
-      const tile = this.tiles.get(info.id);
-      if (tile) {
-        tile.updateState(info);
+      if (!this.tiles.has(info.id)) {
+        this.addTerminal(info);
+      } else {
+        this.sessionInfos.set(info.id, info);
+        const tile = this.tiles.get(info.id);
+        if (tile) {
+          tile.updateState(info);
+        }
       }
     });
+
+    for (const [id, tile] of this.tiles.entries()) {
+      if (!remoteIds.has(id)) {
+        tile.destroy();
+        this.tiles.delete(id);
+        this.sessionInfos.delete(id);
+      }
+    }
+
+    this.updateEmptyState();
     this.notifyCounts();
   }
 
