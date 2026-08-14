@@ -5,6 +5,7 @@
 @import "./sidebar.css";
 @import "./dock.css";
 @import "./search.css";
+@import "./settings.css";
 
 *, *::before, *::after {
   box-sizing: border-box;

@@ -6,20 +6,26 @@ export type TerminalState = 'IDLE' | 'RUNNING' | 'TERMINATED' | 'STREAMING';
 /**
  * Normalizes state from backend representation to standard uppercase enum.
  */
-export function normalizeTerminalState(state: any): TerminalState {
+export function normalizeTerminalState(state: any, activeCommand?: string | null): TerminalState {
   if (!state) return 'IDLE';
   if (typeof state === 'string') {
     const upper = state.toUpperCase();
-    if (upper === 'RUNNING') return 'RUNNING';
+    if (upper === 'RUNNING') {
+      return activeCommand === null ? 'IDLE' : 'RUNNING';
+    }
     if (upper === 'STREAMING') return 'STREAMING';
     if (upper === 'TERMINATED') return 'TERMINATED';
     return 'IDLE';
   }
   if (typeof state === 'object' && state.type) {
     const typeUpper = String(state.type).toUpperCase();
-    if (typeUpper === 'RUNNING') return 'RUNNING';
     if (typeUpper === 'STREAMING') return 'STREAMING';
     if (typeUpper === 'TERMINATED') return 'TERMINATED';
+    if (typeUpper === 'RUNNING') {
+      const cmd = state.data?.command ?? activeCommand;
+      if (cmd === null) return 'IDLE';
+      return 'RUNNING';
+    }
   }
   return 'IDLE';
 }

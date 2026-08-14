@@ -5,6 +5,7 @@ import { TopBar } from './components/TopBar';
 import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
 import { DockTray } from './components/DockTray';
+import { SettingsModal } from './components/SettingsModal';
 import { TerminalSessionInfo } from './types/terminal';
 
 /**
@@ -16,6 +17,7 @@ export async function bootstrapApp(): Promise<void> {
 
   const apiClient = defaultApiClient;
   const sortManager = new SortManager('running_priority');
+  const settingsModal = new SettingsModal();
 
   const topBar = new TopBar(root, {
     onToggleSidebar: () => sidebar.toggle(),
@@ -30,7 +32,8 @@ export async function bootstrapApp(): Promise<void> {
       dockTray.setCanvasInfo(`Tiling Canvas (${cols} cols) | Scrollable`);
     },
     onSetDefaultHeight: (h) => canvas.setDefaultHeight(h),
-    onSearchQueryChange: (q) => sidebar.setSearchQuery(q)
+    onSearchQueryChange: (q) => sidebar.setSearchQuery(q),
+    onOpenSettings: () => settingsModal.toggle()
   });
 
   const appBody = document.createElement('div');

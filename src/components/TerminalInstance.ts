@@ -7,9 +7,10 @@ import { PtyWebSocket } from '../services/PtyWebSocket';
 import { ClipboardService } from '../services/ClipboardService';
 import { CursorTrail } from '../effects/CursorTrail';
 import { SearchOverlay } from './SearchOverlay';
+import { ThemeService } from '../services/ThemeService';
 
 /**
- * High-performance xterm.js instance with WebGL acceleration, inline image rendering, and smooth cursor trailing.
+ * High-performance xterm.js instance with WebGL acceleration, theme synchronization, and smooth cursor trailing.
  */
 export class TerminalInstance {
   public readonly id: string;
@@ -24,6 +25,7 @@ export class TerminalInstance {
   private ws: PtyWebSocket;
   private cursorTrail: CursorTrail;
   private searchOverlay: SearchOverlay;
+  private unsubscribeTheme: (() => void) | null = null;
   private isDisposed = false;
 
   private onCwdChangeListeners: ((cwd: string) => void)[] = [];
@@ -46,37 +48,20 @@ export class TerminalInstance {
     this.canvasOverlay.className = 'cursor-trail-canvas';
     wrapper.appendChild(this.canvasOverlay);
 
+    const themeService = ThemeService.getInstance();
+    const currentTheme = themeService.getTheme();
+    const settings = themeService.getSettings();
+
     const themeOptions: ITerminalOptions = {
-      fontFamily: '"JetBrainsMono Nerd Font", "JetBrainsMono NF", "FiraCode Nerd Font", "Symbols Nerd Font Mono", "JetBrains Mono", "Fira Code", monospace',
-      fontSize: 13,
-      lineHeight: 1.25,
-      cursorBlink: true,
-      cursorStyle: 'bar',
+      fontFamily:
+        '"JetBrainsMono Nerd Font", "JetBrainsMono NF", "FiraCode Nerd Font", "Symbols Nerd Font Mono", "JetBrains Mono", "Fira Code", monospace',
+      fontSize: settings.fontSize,
+      lineHeight: settings.lineHeight,
+      cursorBlink: settings.cursorBlink,
+      cursorStyle: settings.cursorStyle,
       cursorWidth: 2,
       allowProposedApi: true,
-      theme: {
-        background: '#0d1016',
-        foreground: '#f0f6fc',
-        cursor: '#00ffcc',
-        cursorAccent: '#0a0c10',
-        selectionBackground: 'rgba(88, 166, 255, 0.3)',
-        black: '#161c24',
-        red: '#f85149',
-        green: '#3fb950',
-        yellow: '#d29922',
-        blue: '#58a6ff',
-        magenta: '#bc8cff',
-        cyan: '#39c5cf',
-        white: '#d1d7e0',
-        brightBlack: '#565f89',
-        brightRed: '#ff7b72',
-        brightGreen: '#56d364',
-        brightYellow: '#e3b341',
-        brightBlue: '#79c0ff',
-        brightMagenta: '#d2a8ff',
-        brightCyan: '#56d4dd',
-        brightWhite: '#ffffff'
-      }
+      theme: currentTheme.terminal
     };
 
     this.term = new Terminal(themeOptions);
@@ -103,20 +88,32 @@ export class TerminalInstance {
     }
 
     this.cursorTrail = new CursorTrail(this.canvasOverlay);
+    this.canvasOverlay.style.display = settings.cursorTrail ? 'block' : 'none';
+
     this.searchOverlay = new SearchOverlay(this.searchAddon);
     this.container.appendChild(this.searchOverlay.getElement());
 
     this.ws = new PtyWebSocket(this.id, customWsUrl, token);
 
+    this.unsubscribeTheme = themeService.subscribe((theme, newSettings) => {
+      if (this.isDisposed) return;
+      this.term.options.theme = theme.terminal;
+      this.term.options.fontSize = newSettings.fontSize;
+      this.term.options.cursorStyle = newSettings.cursorStyle;
+      this.term.options.cursorBlink = newSettings.cursorBlink;
+      this.canvasOverlay.style.display = newSettings.cursorTrail ? 'block' : 'none';
+      this.fit();
+    });
+
     this.setupEventPiping();
   }
 
   private setupEventPiping(): void {
-    this.term.onData(data => {
+    this.term.onData((data) => {
       this.ws.send(data);
     });
 
-    this.ws.onData(data => {
+    this.ws.onData((data) => {
       this.term.write(data, () => {
         this.updateCursorTrail();
       });
@@ -133,7 +130,7 @@ export class TerminalInstance {
     this.term.attachCustomKeyEventHandler((e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
         if (e.type === 'keydown') {
-          ClipboardService.pasteText().then(text => {
+          ClipboardService.pasteText().then((text) => {
             if (text) {
               this.term.paste(text);
             }
@@ -163,8 +160,8 @@ export class TerminalInstance {
       this.updateCursorTrail();
     });
 
-    this.term.onTitleChange(title => {
-      this.onTitleChangeListeners.forEach(listener => listener(title));
+    this.term.onTitleChange((title) => {
+      this.onTitleChangeListeners.forEach((listener) => listener(title));
     });
 
     this.ws.connect();
@@ -190,7 +187,8 @@ export class TerminalInstance {
     const cursorY = buffer.cursorY;
 
     const overlayRect = this.canvasOverlay.getBoundingClientRect();
-    const screenElement = (this.xtermElement.querySelector('.xterm-screen') || this.xtermElement) as HTMLElement;
+    const screenElement = (this.xtermElement.querySelector('.xterm-screen') ||
+      this.xtermElement) as HTMLElement;
     const screenRect = screenElement.getBoundingClientRect();
 
     const offsetX = Math.max(0, screenRect.left - overlayRect.left);
@@ -267,7 +265,7 @@ export class TerminalInstance {
   public onCwdChange(listener: (cwd: string) => void): () => void {
     this.onCwdChangeListeners.push(listener);
     return () => {
-      this.onCwdChangeListeners = this.onCwdChangeListeners.filter(l => l !== listener);
+      this.onCwdChangeListeners = this.onCwdChangeListeners.filter((l) => l !== listener);
     };
   }
 
@@ -277,7 +275,7 @@ export class TerminalInstance {
   public onTitleChange(listener: (title: string) => void): () => void {
     this.onTitleChangeListeners.push(listener);
     return () => {
-      this.onTitleChangeListeners = this.onTitleChangeListeners.filter(l => l !== listener);
+      this.onTitleChangeListeners = this.onTitleChangeListeners.filter((l) => l !== listener);
     };
   }
 
@@ -287,6 +285,11 @@ export class TerminalInstance {
   public dispose(): void {
     if (this.isDisposed) return;
     this.isDisposed = true;
+
+    if (this.unsubscribeTheme) {
+      this.unsubscribeTheme();
+      this.unsubscribeTheme = null;
+    }
 
     this.cursorTrail.destroy();
     this.searchOverlay.destroy();

@@ -6,6 +6,7 @@ export interface TopBarCallbacks {
   onSetColumns: (cols: GridColumns) => void;
   onSetDefaultHeight: (heightPx: number) => void;
   onSearchQueryChange: (query: string) => void;
+  onOpenSettings?: () => void;
 }
 
 /**
@@ -154,7 +155,14 @@ export class TopBar {
     winControls.appendChild(winMax);
     winControls.appendChild(winClose);
 
+    const settingsBtn = document.createElement('button');
+    settingsBtn.className = 'btn-icon';
+    settingsBtn.innerHTML = '⚙';
+    settingsBtn.title = 'Open Settings (Ctrl+,)';
+    settingsBtn.onclick = () => this.callbacks.onOpenSettings?.();
+
     right.appendChild(runningBadge);
+    right.appendChild(settingsBtn);
     right.appendChild(winControls);
 
     this.element.appendChild(left);

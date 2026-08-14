@@ -269,12 +269,13 @@ impl PtySession {
                                                 *session.command_started_at.write() = None;
                                                 let _ = event_tx.send(SessionEvent::StateChanged(SessionState::Idle));
                                             }
-                                            OscEvent::CommandStart | OscEvent::OutputStart => {
+                                            OscEvent::OutputStart => {
                                                 let current_cmd = session.active_command.read().clone();
                                                 let new_state = SessionState::Running { command: current_cmd };
                                                 *state_guard = new_state.clone();
                                                 let _ = event_tx.send(SessionEvent::StateChanged(new_state));
                                             }
+                                            OscEvent::CommandStart => {}
                                             OscEvent::CwdChanged(new_cwd) => {
                                                 *session.cwd.write() = new_cwd.clone();
                                                 let _ = event_tx.send(SessionEvent::CwdChanged(new_cwd.clone()));

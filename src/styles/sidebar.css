@@ -93,8 +93,8 @@
 
 .sidebar-session-card {
   height: 66px;
-  background: #141c26;
-  border: 1.5px solid var(--border-idle);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: 8px 10px;
   display: flex;
@@ -106,17 +106,14 @@
 }
 
 .sidebar-session-card:hover {
-  background: #182230;
+  background: var(--bg-button);
   border-color: var(--border-active);
 }
 
 .sidebar-session-card.active-terminal {
-  border-color: var(--accent-cyan);
-  background: #1a2433;
-}
-
-.sidebar-session-card.state-streaming, .sidebar-session-card.state-running {
-  border-color: var(--border-streaming);
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald-glow);
+  background: var(--bg-button);
 }
 
 .sidebar-session-card.state-terminated {

@@ -180,6 +180,12 @@ export class Canvas {
             adjTile.fit();
           }
           tile.fit();
+        } else {
+          const viewportWidth = this.container.clientWidth - 28;
+          const newW = Math.max(260, Math.min(viewportWidth, this.dragState.startWidth + deltaX));
+          tileEl.style.width = `${newW}px`;
+          tileEl.style.flex = 'none';
+          tile.fit();
         }
       } else if (
         this.dragState.handle === 'w' ||
@@ -200,6 +206,12 @@ export class Canvas {
             leftEl.style.flex = 'none';
             leftTile.fit();
           }
+          tile.fit();
+        } else {
+          const viewportWidth = this.container.clientWidth - 28;
+          const newW = Math.max(260, Math.min(viewportWidth, this.dragState.startWidth - deltaX));
+          tileEl.style.width = `${newW}px`;
+          tileEl.style.flex = 'none';
           tile.fit();
         }
       }

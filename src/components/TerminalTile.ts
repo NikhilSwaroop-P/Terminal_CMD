@@ -224,7 +224,10 @@ export class TerminalTile {
       this.cwdElement.textContent = `(${info.cwd})`;
     }
 
-    const state: TerminalState = normalizeTerminalState(this.sessionInfo.state);
+    const state: TerminalState = normalizeTerminalState(
+      this.sessionInfo.state,
+      this.sessionInfo.activeCommand
+    );
 
     this.element.classList.remove(
       'state-streaming',
