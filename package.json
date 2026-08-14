@@ -17,6 +17,7 @@
     "@xterm/xterm": "^5.5.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^20.14.0",
     "tsx": "^4.19.0",
     "typescript": "^5.4.5",

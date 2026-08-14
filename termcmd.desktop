@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=TermCMD
+GenericName=Terminal Multiplexer
+Comment=Agent Terminal Multiplexer & Desktop Canvas
+Exec=termcmd
+Icon=termcmd
+Terminal=false
+Type=Application
+Categories=Development;System;TerminalEmulator;
+StartupNotify=true
+Keywords=terminal;multiplexer;agent;pty;canvas;

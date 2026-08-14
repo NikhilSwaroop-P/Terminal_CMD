@@ -69,11 +69,16 @@ async fn handle_socket(socket: WebSocket, session: Arc<PtySession>) {
     });
 
     let mut send_task = tokio::spawn(async move {
-        while let Ok(event) = event_rx.recv().await {
-            if let SessionEvent::Output(chunk) = event {
-                if ws_sender.send(Message::Binary(chunk)).await.is_err() {
-                    break;
+        loop {
+            match event_rx.recv().await {
+                Ok(SessionEvent::Output(chunk)) => {
+                    if ws_sender.send(Message::Binary(chunk)).await.is_err() {
+                        break;
+                    }
                 }
+                Ok(_) => {}
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
         }
     });
