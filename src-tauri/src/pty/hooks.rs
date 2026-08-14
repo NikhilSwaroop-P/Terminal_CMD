@@ -9,19 +9,20 @@ use std::path::{Path, PathBuf};
 /// Shell integration script content for Bash.
 pub const BASH_INTEGRATION: &str = r#"
 __termcmd_prompt_start() {
+    local exit_code="${1:-0}"
+    printf "\033]133;D;%d\007" "$exit_code"
     printf "\033]133;A\007"
     printf "\033]7;file://%s%s\007" "${HOSTNAME:-localhost}" "$PWD"
+    __termcmd_in_prompt=1
 }
 __termcmd_preexec() {
-    local ret=$?
-    printf "\033]133;C\007"
-    return $ret
+    if [ -n "${__termcmd_in_prompt:-}" ]; then
+        unset __termcmd_in_prompt
+        printf "\033]133;C\007"
+    fi
+    return 0
 }
-__termcmd_postexec() {
-    local exit_code=$?
-    printf "\033]133;D;%d\007" "$exit_code"
-}
-PROMPT_COMMAND="__termcmd_postexec; __termcmd_prompt_start; ${PROMPT_COMMAND:-}"
+PROMPT_COMMAND='__termcmd_prompt_start "$?"'
 PS1="\[\033]133;B\007\]$PS1"
 trap '__termcmd_preexec' DEBUG
 "#;
