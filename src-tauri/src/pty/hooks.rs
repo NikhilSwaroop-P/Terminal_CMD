@@ -124,6 +124,7 @@ set -g fish_cursor_replace_one underscore
 set -g fish_cursor_replace underscore
 set -g fish_cursor_external line
 set -g fish_cursor_visual block
+set -g fish_features no-query-terminal
 
 function __termcmd_prompt_render --on-event fish_postexec
     set -e __termcmd_in_prompt

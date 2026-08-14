@@ -18,6 +18,7 @@ def run():
     tid = created["id"]
     pid = created["pid"]
     print(f"Created Terminal: {tid} (PID: {pid})")
+    time.sleep(1.5)
 
     print("\n=== 2. Streaming execution via SSE /exec ===")
     stream_req = urllib.request.Request(

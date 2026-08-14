@@ -257,6 +257,13 @@ impl PtySession {
                             session.buffer.write().push_chunk(chunk);
                             let _ = event_tx.send(SessionEvent::Output(chunk.to_vec()));
 
+                            if chunk.windows(3).any(|w| w == b"\x1b[c") || chunk.windows(4).any(|w| w == b"\x1b[0c") {
+                                let _ = session.write_all(b"\x1b[?62;1;2;6;7;8;9c");
+                            }
+                            if chunk.windows(4).any(|w| w == b"\x1b[>0c" || w == b"\x1b[>0q") || chunk.windows(3).any(|w| w == b"\x1b[>c") {
+                                let _ = session.write_all(b"\x1b[>0;10;1c");
+                            }
+
                             let osc_events = osc_parser.parse_chunk(chunk);
                             for osc_ev in osc_events {
                                 {
@@ -337,8 +344,11 @@ impl PtySession {
         }
 
         let mut full_cmd = command.to_string();
-        if !full_cmd.ends_with('\n') {
-            full_cmd.push('\n');
+        if full_cmd.ends_with('\n') {
+            full_cmd.pop();
+        }
+        if !full_cmd.ends_with('\r') {
+            full_cmd.push('\r');
         }
         self.write_all(full_cmd.as_bytes())
     }

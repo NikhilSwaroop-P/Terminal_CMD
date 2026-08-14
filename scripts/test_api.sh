@@ -28,6 +28,7 @@ if [ -z "$TID" ]; then
 fi
 
 echo "Terminal ID: $TID"
+sleep 1.5
 
 echo -e "\n=== 3. Streaming Command Execution (SSE) ==="
 echo "Running a 3-step loop via /exec..."
