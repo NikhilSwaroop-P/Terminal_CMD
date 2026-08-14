@@ -11,6 +11,7 @@
 - **Phase 1 Execution Plan**: [`plans/PHASE_1_EXECUTION_PLAN.md`](PHASE_1_EXECUTION_PLAN.md)
 - **Phase 2 Execution Plan**: [`plans/PHASE_2_EXECUTION_PLAN.md`](PHASE_2_EXECUTION_PLAN.md)
 - **Phase 3 Execution Plan**: [`plans/PHASE_3_EXECUTION_PLAN.md`](PHASE_3_EXECUTION_PLAN.md)
+- **Phase 4 Execution Plan**: [`plans/PHASE_4_EXECUTION_PLAN.md`](PHASE_4_EXECUTION_PLAN.md)
 
 ---
 
@@ -38,32 +39,22 @@
 
 ---
 
-### Phase 3: Embedded Local Agent API & Dual Streaming [PLANNED / READY FOR EXECUTION]
-- [ ] **Axum Server Setup**: Localhost loopback binding (`127.0.0.1:7890`) with bearer token authentication guard.
-- [ ] **REST Endpoints**: `/terminals` (create, list, inspect, resize, input, kill, close).
-- [ ] **SSE Dual-Streaming Protocol (`/exec`)**: Real-time stdout/stderr streaming, `stripAnsi` token optimization, interactive prompt detection (`event: prompt_waiting`), concurrency conflict guard (`409 Conflict`).
-- [ ] **WebSocket Protocol (`/ws`)**: Full-duplex bidirectional interactive raw streaming.
-- [ ] **Automated Test Coverage**: Unit and integration tests for API endpoints, SSE streams, authentication, and ANSI filtering.
+### Phase 3: Embedded Local Agent API & Dual Streaming [COMPLETED]
+- [x] **Axum Server Setup**: Localhost loopback binding (`127.0.0.1:7890`) with bearer token authentication guard.
+- [x] **REST Endpoints**: `/api/v1/terminals` (create, list, inspect, resize, input, kill, close).
+- [x] **SSE Dual-Streaming Protocol (`/exec`)**: Real-time stdout/stderr streaming, `stripAnsi` token optimization, interactive prompt detection (`event: prompt_waiting`), concurrency conflict guard (`409 Conflict`).
+- [x] **WebSocket Protocol (`/ws`)**: Full-duplex bidirectional interactive raw streaming.
+- [x] **Automated Test Coverage**: 10 integration tests in `api_tests.rs`, 15 unit tests in `lib.rs`, and 6 integration tests in `pty_tests.rs` (31 total passing tests).
 
 ---
 
-### Phase 4: Desktop Canvas UI & Kitty Aesthetics
-- [ ] **Frontend Scaffold**: Vite + TypeScript + Vanilla CSS design tokens.
-- [ ] **Dynamic Tiling Grid**:
-  - Columns-per-row controller (`1`, `2`, `3`, `4` cols).
-  - Top-insertion rule for newly spawned terminals.
-  - Infinite vertical scrolling container.
-  - Direct edge and corner drag-resizing with dynamic adjacent tile reflow.
-- [ ] **Collapsible Sidebar Organizer**:
-  - Session tree with running/idle/error status pills.
-  - Double-click to pin/scroll to top.
-  - Instant remove/kill button (`✕`).
-  - Sorting modes: Running Priority, Recent Activity (MRU), Creation Order.
-- [ ] **Terminal Canvas & Kitty Cursor FX**:
-  - WebGL-accelerated `xterm.js` rendering.
-  - Spring-damper physics cursor trail shader overlay ($m\mathbf{p}'' + c\mathbf{p}' + k\Delta\mathbf{p} = 0$).
-  - Linux top-right window controls (`_ □ ✕`).
-  - Minimized dock tray and copy-on-select integration.
+### Phase 4: Desktop Canvas UI & Kitty Aesthetics [PLANNED / READY FOR EXECUTION]
+- [ ] **Frontend Scaffold**: Vite + TypeScript + Kitty Tokyo Night design tokens.
+- [ ] **Dynamic Tiling Grid**: Columns-per-row controller (`1`, `2`, `3`, `4` cols), top-insertion rule, infinite vertical scroll container, direct edge and corner drag-resizing with dynamic adjacent tile reflow.
+- [ ] **Terminal Tile & Linux Header**: Linux top-right controls (`_ □ ✕`), dynamic status badges, copy-on-select clipboard integration, and in-tile buffer search (`Ctrl+Shift+F`).
+- [ ] **Kitty Spring-Physics Cursor Shader**: WebGL/Canvas overlay tracking xterm cursor jumps with velocity-based decay.
+- [ ] **Collapsible Sidebar Organizer**: Session tree, double-click to pin/move to top, instant remove buttons, and 3 sorting modes (Running Priority, MRU, Creation).
+- [ ] **Dock Tray & Keybindings**: Minimized window dock tray and global shortcut manager (`Ctrl+Alt+N`, `Ctrl+Alt+1..4`, etc.).
 
 ---
 
