@@ -12,6 +12,7 @@
 - **Phase 2 Execution Plan**: [`plans/PHASE_2_EXECUTION_PLAN.md`](PHASE_2_EXECUTION_PLAN.md)
 - **Phase 3 Execution Plan**: [`plans/PHASE_3_EXECUTION_PLAN.md`](PHASE_3_EXECUTION_PLAN.md)
 - **Phase 4 Execution Plan**: [`plans/PHASE_4_EXECUTION_PLAN.md`](PHASE_4_EXECUTION_PLAN.md)
+- **Phase 5 Execution Plan**: [`plans/PHASE_5_EXECUTION_PLAN.md`](PHASE_5_EXECUTION_PLAN.md)
 
 ---
 
@@ -59,10 +60,12 @@
 
 ---
 
-### Phase 5: Verification, Benchmarking & Linux Packaging
-- [ ] **Automated Unit & Integration Tests**: PTY lifecycle, OSC parser, SSE chunk stream integrity, tile resizing math.
-- [ ] **High-Volume Stress Benchmark**: Stream $>100,000\text{ lines/min}$ verifying zero UI freezes ($>55\text{ FPS}$).
-- [ ] **Platform Verification**: Wayland / X11 rendering stability, memory footprint verification ($<45\text{MB}$ idle).
+### Phase 5: Verification, Benchmarking & Linux Packaging [PLANNED / READY FOR EXECUTION]
+- [ ] **High-Throughput Log Burst Stress Testing**: Streaming $>100,000\text{ lines/min}$ verifying zero UI drops and $>55\text{ FPS}$ frame rate.
+- [ ] **10x Agent Concurrency Stress Test**: Parallel multi-session command execution with prompt tracking and conflict verification.
+- [ ] **Process Group Signal & Zombie Cleanup Audit**: Verifying zero orphaned processes on `SIGINT` and terminal deletion.
+- [ ] **Telemetry & Resource Footprint Audit**: Verifying $<45\text{MB}$ idle RSS memory and $<0.2\%$ idle CPU.
+- [ ] **Linux Desktop Packaging & Tauri Bundling**: Setting up desktop icons, `.desktop` entry, and `cargo tauri build` binary distribution.
 
 ---
 
