@@ -17,3 +17,8 @@ src-tauri/target/
 *.log
 .DS_Store
 *.token
+
+# Distribution build artifacts
+dist-package/
+src-tauri/gen/
+*.tar.gz
