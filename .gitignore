@@ -1,0 +1,19 @@
+# Node & Build artifacts
+node_modules/
+dist/
+build/
+.cache/
+
+# Rust artifacts
+target/
+Cargo.lock
+
+# Tauri artifacts
+src-tauri/target/
+
+# Environment & Temporary files
+.env
+.env.local
+*.log
+.DS_Store
+*.token

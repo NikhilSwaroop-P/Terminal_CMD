@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080a0f" />
+      <stop offset="100%" stop-color="#0d1118" />
+    </linearGradient>
+    <linearGradient id="termGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#12161f" />
+      <stop offset="100%" stop-color="#0d1017" />
+    </linearGradient>
+    <linearGradient id="cyanTrail2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38ef7d" stop-opacity="0" />
+      <stop offset="60%" stop-color="#11998e" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#38ef7d" stop-opacity="1" />
+    </linearGradient>
+    <filter id="glow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="edgeGlow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="1440" height="900" fill="url(#bgGrad2)" />
+
+  <rect x="0" y="0" width="1440" height="52" fill="#0f131a" stroke="#1c222d" stroke-width="1" />
+  
+  <rect x="14" y="10" width="34" height="32" rx="6" fill="#1b222d" stroke="#2d3748" stroke-width="1" />
+  <text x="23" y="31" fill="#58a6ff" font-family="sans-serif" font-size="16">☰</text>
+
+  <rect x="58" y="10" width="125" height="32" rx="6" fill="#1d2432" stroke="#333e54" stroke-width="1" />
+  <text x="70" y="30" fill="#58a6ff" font-family="monospace" font-size="11" font-weight="bold">+ NEW TERMINAL</text>
+
+  <rect x="195" y="10" width="220" height="32" rx="6" fill="#090b10" stroke="#1f2633" stroke-width="1" />
+  <text x="208" y="30" fill="#8b949e" font-family="sans-serif" font-size="11">Cols/Row: </text>
+  <rect x="270" y="14" width="26" height="24" rx="4" fill="#1f2633" />
+  <text x="279" y="30" fill="#8b949e" font-family="monospace" font-size="11">1</text>
+  <rect x="300" y="14" width="26" height="24" rx="4" fill="#1f2633" />
+  <text x="309" y="30" fill="#8b949e" font-family="monospace" font-size="11">2</text>
+  <rect x="330" y="14" width="26" height="24" rx="4" fill="#58a6ff" />
+  <text x="339" y="30" fill="#0d1117" font-family="monospace" font-size="11" font-weight="bold">3</text>
+  <rect x="360" y="14" width="26" height="24" rx="4" fill="#1f2633" />
+  <text x="369" y="30" fill="#8b949e" font-family="monospace" font-size="11">4</text>
+
+  <rect x="428" y="10" width="230" height="32" rx="6" fill="#090b10" stroke="#1f2633" stroke-width="1" />
+  <text x="440" y="30" fill="#8b949e" font-family="sans-serif" font-size="11">Default Height: [ 320px ▾ ]</text>
+
+  <rect x="1110" y="12" width="160" height="28" rx="14" fill="#14261d" stroke="#238636" stroke-width="1" />
+  <circle cx="1125" cy="26" r="4" fill="#3fb950" />
+  <text x="1138" y="30" fill="#3fb950" font-family="monospace" font-size="11" font-weight="bold">3 RUNNING AGENTS</text>
+
+  <g transform="translate(1330, 10)">
+    <rect x="0" y="0" width="30" height="30" rx="4" fill="#161c24" />
+    <text x="11" y="20" fill="#8b949e" font-family="monospace" font-size="14">_</text>
+    <rect x="36" y="0" width="30" height="30" rx="4" fill="#161c24" />
+    <text x="46" y="20" fill="#8b949e" font-family="monospace" font-size="13">□</text>
+    <rect x="72" y="0" width="30" height="30" rx="4" fill="#2d1519" />
+    <text x="82" y="20" fill="#f85149" font-family="monospace" font-size="13">✕</text>
+  </g>
+
+  <rect x="0" y="52" width="260" height="800" fill="#0c0e14" stroke="#1d232f" stroke-width="1" />
+  <text x="16" y="78" fill="#8b949e" font-family="sans-serif" font-size="11" font-weight="bold">SESSIONS (6) - [2x: Top]</text>
+
+  <rect x="12" y="90" width="236" height="50" rx="6" fill="#141c26" stroke="#238636" stroke-width="1.5" />
+  <circle cx="24" cy="115" r="4" fill="#3fb950" />
+  <text x="34" y="112" fill="#f0f6fc" font-family="monospace" font-size="11" font-weight="bold">#1: task-agent-42</text>
+  <text x="34" y="128" fill="#8b949e" font-family="monospace" font-size="9">$ cargo build</text>
+  <text x="230" y="118" fill="#f85149" font-family="sans-serif" font-size="11">✕</text>
+
+  <rect x="12" y="146" width="236" height="50" rx="6" fill="#141c26" stroke="#238636" stroke-width="1.5" />
+  <circle cx="24" cy="171" r="4" fill="#3fb950" />
+  <text x="34" y="168" fill="#f0f6fc" font-family="monospace" font-size="11" font-weight="bold">#2: crawler-worker</text>
+  <text x="34" y="184" fill="#8b949e" font-family="monospace" font-size="9">$ python crawl.py</text>
+  <text x="230" y="174" fill="#f85149" font-family="sans-serif" font-size="11">✕</text>
+
+  <rect x="12" y="202" width="236" height="50" rx="6" fill="#141c26" stroke="#238636" stroke-width="1.5" />
+  <circle cx="24" cy="227" r="4" fill="#3fb950" />
+  <text x="34" y="224" fill="#f0f6fc" font-family="monospace" font-size="11" font-weight="bold">#3: test-watch</text>
+  <text x="34" y="240" fill="#8b949e" font-family="monospace" font-size="9">$ cargo test</text>
+  <text x="230" y="230" fill="#f85149" font-family="sans-serif" font-size="11">✕</text>
+
+  <g transform="translate(275, 66)">
+    <rect width="370" height="350" rx="8" fill="url(#termGrad2)" stroke="#238636" stroke-width="1.5" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <circle cx="16" cy="15" r="4" fill="#3fb950" />
+    <text x="26" y="19" fill="#f0f6fc" font-family="monospace" font-size="10" font-weight="bold">task-agent-42</text>
+    
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11">
+      <text y="0" fill="#3fb950">$ cargo build</text>
+      <text y="18" fill="#79c0ff">Compiling core v0.1</text>
+      <text y="36" fill="#e3b341">Building [==&gt; ]</text>
+      <path d="M 20 60 Q 80 80 140 60" fill="none" stroke="url(#cyanTrail2)" stroke-width="8" filter="url(#glow2)" />
+      <rect x="138" y="54" width="6" height="12" fill="#38ef7d" />
+    </g>
+  </g>
+
+  <g transform="translate(660, 66)">
+    <rect width="370" height="350" rx="8" fill="url(#termGrad2)" stroke="#238636" stroke-width="1.5" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <circle cx="16" cy="15" r="4" fill="#3fb950" />
+    <text x="26" y="19" fill="#f0f6fc" font-family="monospace" font-size="10" font-weight="bold">crawler-worker</text>
+    
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11">
+      <text y="0" fill="#3fb950">$ python crawl.py</text>
+      <text y="18" fill="#58a6ff">[FETCH] docs.rs/axum</text>
+      <text y="36" fill="#7ee787">Parsed 4.2k tokens</text>
+      <rect x="150" y="30" width="6" height="12" fill="#3fb950" />
+    </g>
+  </g>
+
+  <g transform="translate(1045, 66)">
+    <rect width="370" height="350" rx="8" fill="url(#termGrad2)" stroke="#238636" stroke-width="1.5" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <circle cx="16" cy="15" r="4" fill="#3fb950" />
+    <text x="26" y="19" fill="#f0f6fc" font-family="monospace" font-size="10" font-weight="bold">test-watch</text>
+    
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11">
+      <text y="0" fill="#3fb950">$ cargo test</text>
+      <text y="18" fill="#c9d1d9">running 12 tests</text>
+      <text y="36" fill="#3fb950">12 passed</text>
+      <rect x="80" y="30" width="6" height="12" fill="#e3b341" />
+    </g>
+  </g>
+
+  <g transform="translate(275, 430)">
+    <rect width="370" height="340" rx="8" fill="url(#termGrad2)" stroke="#262f3f" stroke-width="1" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <text x="14" y="19" fill="#8b949e" font-family="monospace" font-size="10">dev-server</text>
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11" opacity="0.7">
+      <text y="0" fill="#8b949e">$ npm run dev</text>
+      <text y="18" fill="#58a6ff">ready in 240ms</text>
+    </g>
+  </g>
+
+  <g transform="translate(660, 430)">
+    <rect width="370" height="340" rx="8" fill="url(#termGrad2)" stroke="#262f3f" stroke-width="1" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <text x="14" y="19" fill="#8b949e" font-family="monospace" font-size="10">git-sh (exit 0)</text>
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11" opacity="0.7">
+      <text y="0" fill="#8b949e">$ git status</text>
+      <text y="18" fill="#3fb950">clean tree</text>
+    </g>
+  </g>
+
+  <g transform="translate(1045, 430)">
+    <rect width="370" height="340" rx="8" fill="url(#termGrad2)" stroke="#262f3f" stroke-width="1" />
+    <rect width="370" height="30" rx="8" fill="#161c24" />
+    <text x="14" y="19" fill="#8b949e" font-family="monospace" font-size="10">zsh</text>
+    <g transform="translate(305, 4)">
+      <text x="0" y="16" fill="#8b949e" font-family="monospace" font-size="11">_</text>
+      <text x="18" y="16" fill="#8b949e" font-family="monospace" font-size="10">□</text>
+      <text x="36" y="16" fill="#f85149" font-family="monospace" font-size="10">✕</text>
+    </g>
+    <g transform="translate(12, 48)" font-family="monospace" font-size="11" opacity="0.7">
+      <text y="0" fill="#3fb950">user@desktop:~$ █</text>
+    </g>
+  </g>
+
+  <rect x="1424" y="66" width="8" height="780" fill="#12161f" rx="4" />
+  <rect x="1424" y="80" width="8" height="180" fill="#30363d" rx="4" />
+
+  <rect x="0" y="852" width="1440" height="48" fill="#0c0e14" stroke="#1d232f" stroke-width="1" />
+  <text x="24" y="881" fill="#8b949e" font-family="monospace" font-size="11">MINIMIZED DOCK:</text>
+  <rect x="150" y="860" width="160" height="32" rx="6" fill="#161c26" stroke="#2d3748" stroke-width="1" />
+  <text x="165" y="880" fill="#8b949e" font-family="monospace" font-size="11">_ background-job</text>
+  <text x="1240" y="881" fill="#6e7681" font-family="monospace" font-size="11">Tiling Canvas (3 cols) | Scrollable</text>
+</svg>
