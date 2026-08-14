@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::pty::session::SessionInfo;
+pub use crate::pty::session::SessionInfo;
 
 /// Payload for creating a new terminal session.
 #[derive(Debug, Clone, Deserialize, Serialize)]

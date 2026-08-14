@@ -104,6 +104,7 @@ pub async fn start_server(
     })?;
 
     let bound_addr = tcp_listener.local_addr()?;
+    let _ = crate::api::discovery::persist_port(bound_addr.port());
 
     info!(
         addr = %bound_addr,

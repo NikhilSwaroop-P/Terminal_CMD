@@ -13,6 +13,7 @@ echo "Step 2: Building release binary..."
 cargo build --release --manifest-path src-tauri/Cargo.toml
 
 RELEASE_BIN="target/release/termcmd"
+CLI_BIN="target/release/termcmd-cli"
 if [ ! -f "${RELEASE_BIN}" ]; then
     echo "✗ FAIL: Release binary ${RELEASE_BIN} not found."
     exit 1
@@ -33,6 +34,9 @@ mkdir -p "${PKG_DIR}/share/icons/hicolor/512x512/apps"
 
 echo "Step 3: Staging binaries, icons, and desktop shortcuts..."
 cp "${RELEASE_BIN}" "${PKG_DIR}/bin/termcmd"
+if [ -f "${CLI_BIN}" ]; then
+    cp "${CLI_BIN}" "${PKG_DIR}/bin/termcmd-cli"
+fi
 cp "termcmd.desktop" "${PKG_DIR}/share/applications/termcmd.desktop"
 
 cp "src-tauri/icons/32x32.png" "${PKG_DIR}/share/icons/hicolor/32x32/apps/termcmd.png"
@@ -48,6 +52,10 @@ PREFIX="${PREFIX:-${HOME}/.local}"
 echo "Installing TermCMD to ${PREFIX}..."
 mkdir -p "${PREFIX}/bin" "${PREFIX}/share/applications" "${PREFIX}/share/icons/hicolor/512x512/apps"
 install -m 755 "${DIR}/bin/termcmd" "${PREFIX}/bin/termcmd"
+if [ -f "${DIR}/bin/termcmd-cli" ]; then
+    install -m 755 "${DIR}/bin/termcmd-cli" "${PREFIX}/bin/termcmd-cli"
+    ln -sf "${PREFIX}/bin/termcmd-cli" "${PREFIX}/bin/termcli"
+fi
 cp -r "${DIR}/share/"* "${PREFIX}/share/"
 if which update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "${PREFIX}/share/applications" 2>/dev/null || true
