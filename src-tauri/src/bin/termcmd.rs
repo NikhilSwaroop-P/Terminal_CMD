@@ -101,9 +101,13 @@ enum Commands {
 
         #[arg(long, default_value = "SIGINT", help = "POSIX signal name (SIGINT, SIGTERM, SIGKILL)")]
         signal: String,
+
+        #[arg(short, long, help = "Force close and delete the terminal session from the canvas")]
+        force: bool,
     },
 
     /// Close and delete a terminal session from the canvas
+    #[command(alias = "delete", alias = "rm")]
     Close {
         #[arg(help = "Terminal session ID")]
         id: String,
@@ -174,8 +178,12 @@ async fn main() {
         Commands::Input { id, data, raw } => {
             handle_input(&client, &conn, id, data, raw).await;
         }
-        Commands::Kill { id, signal } => {
-            handle_kill(&client, &conn, id, signal).await;
+        Commands::Kill { id, signal, force } => {
+            if force {
+                handle_close(&client, &conn, id).await;
+            } else {
+                handle_kill(&client, &conn, id, signal).await;
+            }
         }
         Commands::Close { id } => {
             handle_close(&client, &conn, id).await;
@@ -427,7 +435,7 @@ async fn handle_kill(client: &Client, conn: &ConnectionInfo, id: String, signal:
         print_error_and_exit(resp).await;
     }
 
-    println!("Signal {} sent to terminal session {}", signal, id);
+    println!("Signal {} sent to foreground process in {}. (Use 'termcli close {}' or 'termcli kill {} -f' to delete the terminal)", signal, id, id, id);
 }
 
 async fn handle_close(client: &Client, conn: &ConnectionInfo, id: String) {
