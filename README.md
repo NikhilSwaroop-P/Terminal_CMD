@@ -38,18 +38,23 @@
 ## 📸 Screenshots & Interface Gallery
 
 <p align="center">
-  <img src="docs/screenshots/canvas_grid_layout.png" alt="TermCMD Grid Layout" width="850">
+  <img src="docs/screenshots/termcmd_live_canvas.png" alt="TermCMD Live Multi-Terminal Desktop Canvas" width="920">
 </p>
 
 <details>
 <summary><b>View Additional Layout Modes & Screenshots</b></summary>
 
-### 1. Collapsible Session Tree & Sidebar Overview
+### 1. Vector Grid Layout Overview
+<p align="center">
+  <img src="docs/screenshots/canvas_grid_layout.png" alt="TermCMD Grid Layout" width="850">
+</p>
+
+### 2. Collapsible Session Tree & Sidebar Overview
 <p align="center">
   <img src="docs/screenshots/canvas_sidebar_expanded.png" alt="TermCMD Sidebar" width="850">
 </p>
 
-### 2. Zen Stack Single Column Mode
+### 3. Zen Stack Single Column Mode
 <p align="center">
   <img src="docs/screenshots/canvas_zen_mode.png" alt="TermCMD Zen Mode" width="850">
 </p>

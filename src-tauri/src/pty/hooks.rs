@@ -55,95 +55,25 @@ add-zsh-hook preexec __termcmd_preexec
 
 /// Shell integration script content for Fish.
 pub const FISH_INTEGRATION: &str = r#"
-function __termcmd_sync_dir_history --on-variable PWD
-    set -l dir_hash (echo -n "$PWD" | md5sum 2>/dev/null | cut -d" " -f1)
-    if test -z "$dir_hash"
-        return
-    end
-    set -l dir_dir "$HOME/.local/share/termcmd/dir_history"
-    mkdir -p "$dir_dir"
-    set -l dir_file "$dir_dir/$dir_hash"
-
-    for item in (history search --prefix "./" 2>/dev/null) (history search --prefix "../" 2>/dev/null) (history search --prefix "cd " 2>/dev/null)
-        if string match -qr "^cd\s+(?![/~-])" -- $item
-            set -l target (string replace -r "^cd\s+" "" -- $item)
-            if not test -d "$target"
-                history delete --exact --case-sensitive "$item" 2>/dev/null
-            end
-        else if string match -qr "^(\./|\.\./)" -- $item
-            set -l target (string match -r "^[^\s]+" -- $item)
-            if not test -e "$target"
-                history delete --exact --case-sensitive "$item" 2>/dev/null
-            end
-        end
-    end
-
-    if test -f "$dir_file"
-        while read -l line
-            if test -n "$line"
-                history append "$line" 2>/dev/null
-            end
-        end < "$dir_file"
-    end
-end
-
-function __termcmd_prompt_enter --on-event fish_prompt
+function __termcmd_prompt --on-event fish_prompt
     set -g __termcmd_in_prompt 1
+    printf "\033]133;A\007"
+    printf "\033]7;file://%s%s\007" (hostname 2>/dev/null || echo localhost) (pwd)
 end
 
 function __termcmd_preexec --on-event fish_preexec
-    if not set -q __termcmd_in_prompt
-        printf "\033]133;C\007"
-    end
+    set -e __termcmd_in_prompt
+    printf "\033]133;C\007"
 end
 
 function __termcmd_postexec --on-event fish_postexec
     set -l last_status $status
-    set -l cmd "$argv[1]"
     printf "\033]133;D;%d\007" $last_status
-    if string match -qr "^(\./|\.\./|cd\s+(?![/~-]))|(\s\./|\s\.\./)" -- $cmd
-        set -l dir_hash (echo -n "$PWD" | md5sum 2>/dev/null | cut -d" " -f1)
-        if test -n "$dir_hash"
-            set -l dir_dir "$HOME/.local/share/termcmd/dir_history"
-            mkdir -p "$dir_dir"
-            set -l dir_file "$dir_dir/$dir_hash"
-            if test -f "$dir_file"
-                if not grep -F -x "$cmd" "$dir_file" >/dev/null 2>&1
-                    echo "$cmd" >> "$dir_file"
-                end
-            else
-                echo "$cmd" >> "$dir_file"
-            end
-        end
-    end
 end
 
 set -g fish_cursor_default line
 set -g fish_cursor_insert line
-set -g fish_cursor_replace_one underscore
-set -g fish_cursor_replace underscore
-set -g fish_cursor_external line
-set -g fish_cursor_visual block
 set -g fish_features no-query-terminal
-
-function __termcmd_prompt_render --on-event fish_postexec
-    set -e __termcmd_in_prompt
-    printf "\033[5 q"
-    printf "\033]133;A\007"
-    printf "\033]7;file://%s%s\007" (hostname) (pwd)
-    if not set -q __termcmd_dir_synced
-        set -g __termcmd_dir_synced 1
-        __termcmd_sync_dir_history
-    end
-end
-
-if not set -q __termcmd_dir_synced
-    set -g __termcmd_dir_synced 1
-    __termcmd_sync_dir_history
-    printf "\033[5 q"
-    printf "\033]133;A\007"
-    printf "\033]7;file://%s%s\007" (hostname) (pwd)
-end
 "#;
 
 /// Detected shell family for integration configuration.
