@@ -162,6 +162,9 @@ gantt
 - [ ] **Remote PTY Adapters**: SSH and Docker container session adapters for remote agent orchestration.
 - [ ] **Cross-Platform Bundles**: macOS App bundle and Windows MSI/NSIS installers.
 
+### ⚠️ Known Issues
+- **Interactive Mode Activation Delay**: When spawning a new terminal tile for interactive keyboard input, the PTY child process and frontend terminal canvas may take **5 to 10 seconds** to become fully active and accept keystrokes. Once initialized, the terminal runs with sub-millisecond response times. A full fix is tracked for v0.1.1.
+
 ---
 
 ## Installation & Usage
