@@ -36,6 +36,15 @@ pub async fn ws_terminal(
     ws.on_upgrade(move |socket| handle_socket(socket, session))
 }
 
+fn is_ignored_terminal_query_response(bytes: &[u8]) -> bool {
+    bytes.starts_with(b"\x1b]10;")
+        || bytes.starts_with(b"\x1b]11;")
+        || bytes.starts_with(b"\x1b[4;")
+        || bytes.starts_with(b"\x1b[8;")
+        || (bytes.starts_with(b"\x1b[") && bytes.ends_with(b"t"))
+        || (bytes.starts_with(b"\x1b[?") && bytes.ends_with(b"c"))
+}
+
 async fn handle_socket(socket: WebSocket, session: Arc<PtySession>) {
     let (mut ws_sender, mut ws_receiver) = socket.split();
     let mut event_rx = session.subscribe();
@@ -53,12 +62,12 @@ async fn handle_socket(socket: WebSocket, session: Arc<PtySession>) {
         while let Some(Ok(msg)) = ws_receiver.next().await {
             match msg {
                 Message::Text(text) => {
-                    if !text.starts_with("\x1b]10;") && !text.starts_with("\x1b]11;") {
+                    if !is_ignored_terminal_query_response(text.as_bytes()) {
                         let _ = session_writer.write_all(text.as_bytes());
                     }
                 }
                 Message::Binary(bytes) => {
-                    if !bytes.starts_with(b"\x1b]10;") && !bytes.starts_with(b"\x1b]11;") {
+                    if !is_ignored_terminal_query_response(&bytes) {
                         let _ = session_writer.write_all(&bytes);
                     }
                 }

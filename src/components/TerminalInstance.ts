@@ -123,11 +123,25 @@ export class TerminalInstance {
       return false;
     });
 
+    this.term.parser.registerCsiHandler({ final: 't' }, () => {
+      return true;
+    });
+
     this.setupEventPiping();
   }
 
   private setupEventPiping(): void {
     this.term.onData((data) => {
+      if (
+        data.startsWith('\x1b]10;') ||
+        data.startsWith('\x1b]11;') ||
+        data.startsWith('\x1b[4;') ||
+        data.startsWith('\x1b[8;') ||
+        (data.startsWith('\x1b[') && data.endsWith('t')) ||
+        (data.startsWith('\x1b[?') && data.endsWith('c'))
+      ) {
+        return;
+      }
       this.ws.send(data);
     });
 
