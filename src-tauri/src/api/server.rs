@@ -2,10 +2,12 @@
 
 use std::net::SocketAddr;
 
+use axum::extract::State;
 use axum::http::{header, HeaderValue, Method};
 use axum::middleware;
 use axum::routing::{get, post};
-use axum::Router;
+use axum::{Json, Router};
+use serde_json::json;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tracing::info;
 
@@ -17,6 +19,10 @@ use crate::api::routes::{
 use crate::api::sse::exec_terminal;
 use crate::api::ws::ws_terminal;
 use crate::state::AppState;
+
+async fn token_endpoint(State(auth): State<AuthState>) -> Json<serde_json::Value> {
+    Json(json!({ "token": auth.token() }))
+}
 
 /// Default port for the TermCMD Agent API server.
 pub const DEFAULT_API_PORT: u16 = 7890;
@@ -61,6 +67,7 @@ pub fn create_router(app_state: AppState, auth_state: AuthState) -> Router {
         .with_state(app_state);
 
     Router::new()
+        .route("/__token", get(token_endpoint).with_state(auth_state))
         .merge(protected_routes)
         .layer(cors)
 }

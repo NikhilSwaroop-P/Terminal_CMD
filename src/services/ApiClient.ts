@@ -53,7 +53,7 @@ export class ApiClient {
       return this.token;
     }
     try {
-      const res = await fetch('/__token');
+      const res = await fetch(`${this.baseUrl}/__token`);
       if (res.ok) {
         const data = await res.json();
         if (data.token) {
@@ -105,7 +105,7 @@ export class ApiClient {
     let res = await fetch(`${this.baseUrl}${path}`, { ...options, headers });
     if (res.status === 401) {
       try {
-        const refresh = await fetch('/__token');
+        const refresh = await fetch(`${this.baseUrl}/__token`);
         if (refresh.ok) {
           const data = await refresh.json();
           if (data.token) {

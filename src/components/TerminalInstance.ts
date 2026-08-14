@@ -170,10 +170,6 @@ export class TerminalInstance {
       this.updateCursorTrail();
     });
 
-    this.term.onRender(() => {
-      this.updateCursorTrail();
-    });
-
     this.term.onLineFeed(() => {
       this.updateCursorTrail();
     });

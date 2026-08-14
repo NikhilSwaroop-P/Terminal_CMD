@@ -139,11 +139,12 @@ export async function bootstrapApp(): Promise<void> {
 
   setInterval(async () => {
     try {
+      if (document.hidden) return;
       const list = await apiClient.listTerminals();
       canvas.syncTerminals(list);
       sidebar.updateSessions(canvas.getSessionInfos());
     } catch {}
-  }, 2000);
+  }, 4000);
 }
 
 if (document.readyState === 'loading') {

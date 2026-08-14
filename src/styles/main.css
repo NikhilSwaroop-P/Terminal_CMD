@@ -218,20 +218,7 @@ html, body {
   height: 8px;
   border-radius: 50%;
   background: var(--accent-emerald);
-  box-shadow: 0 0 8px var(--accent-emerald);
-  animation: pulse-glow 1.6s infinite ease-in-out;
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    transform: scale(0.9);
-    opacity: 0.75;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-    box-shadow: 0 0 12px var(--accent-emerald);
-  }
+  box-shadow: 0 0 6px var(--accent-emerald);
 }
 
 .window-controls-group {

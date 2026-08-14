@@ -5,11 +5,11 @@ use termcmd_core::pty::SessionConfig;
 use termcmd_core::state::AppState;
 use tracing::info;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    info!("Starting TermCMD Backend Core & Embedded Agent API Server");
+    let args: Vec<String> = std::env::args().collect();
+    let is_headless = args.iter().any(|arg| arg == "--headless" || arg == "--daemon");
 
     let app_state = AppState::new();
     let auth_state = AuthState::new();
@@ -24,12 +24,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Spawned initial default PTY session"
     );
 
-    let (bound_addr, _server_handle) =
-        start_server(app_state, auth_state.clone(), DEFAULT_API_PORT).await?;
-
     let token = auth_state.token().to_string();
-    let _ = std::fs::write("/tmp/termcmd_token", &token);
     println!("TERMCMD_TOKEN: {}", token);
+
+    let runtime = tokio::runtime::Runtime::new()?;
+    let app_state_clone = app_state.clone();
+    let auth_state_clone = auth_state.clone();
+
+    let (bound_addr, _server_handle) = runtime.block_on(async {
+        start_server(app_state_clone, auth_state_clone, DEFAULT_API_PORT).await
+    })?;
 
     info!(
         addr = %bound_addr,
@@ -37,9 +41,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Agent API server ready"
     );
 
-    tokio::signal::ctrl_c().await?;
-    info!("Shutting down TermCMD");
+    if is_headless {
+        info!("Running in headless server daemon mode");
+        runtime.block_on(async {
+            let _ = tokio::signal::ctrl_c().await;
+        });
+        info!("Shutting down TermCMD");
+        return Ok(());
+    }
+
+    tauri::Builder::default()
+        .setup(move |_app| {
+            info!("Tauri 2.0 Webview desktop window initialized");
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .map_err(|e| std::io::Error::other(e.to_string()))?;
 
     Ok(())
 }
-
