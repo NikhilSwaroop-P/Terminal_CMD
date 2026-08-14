@@ -1,0 +1,75 @@
+.dock-container {
+  height: var(--dock-height);
+  min-height: var(--dock-height);
+  background: var(--bg-dock);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 50;
+  gap: 12px;
+}
+
+.dock-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.dock-left::-webkit-scrollbar {
+  height: 4px;
+}
+
+.dock-left::-webkit-scrollbar-thumb {
+  background: #212836;
+  border-radius: 2px;
+}
+
+.dock-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.dock-chips-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dock-chip {
+  height: 32px;
+  background: #161c26;
+  border: 1px solid var(--border-idle);
+  border-radius: var(--radius-md);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.dock-chip:hover {
+  background: #1f2838;
+  border-color: var(--accent-cyan);
+}
+
+.dock-chip-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.dock-right {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}

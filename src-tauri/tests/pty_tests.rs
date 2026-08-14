@@ -1,6 +1,6 @@
 //! Automated integration test suite for TermCMD Backend Core & PTY Engine.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 use termcmd_core::pty::{PtyManager, SessionConfig, SessionEvent, SessionState};
 use tokio::time::timeout;
@@ -27,13 +27,11 @@ async fn test_pty_spawn_and_prompt() {
 
     let start = std::time::Instant::now();
     while start.elapsed() < timeout_duration {
-        if let Ok(Ok(event)) = timeout(Duration::from_millis(500), rx.recv()).await {
-            if let SessionEvent::Output(bytes) = event {
-                let text = String::from_utf8_lossy(&bytes);
-                if text.contains("hello_termcmd") {
-                    found_output = true;
-                    break;
-                }
+        if let Ok(Ok(SessionEvent::Output(bytes))) = timeout(Duration::from_millis(500), rx.recv()).await {
+            let text = String::from_utf8_lossy(&bytes);
+            if text.contains("hello_termcmd") {
+                found_output = true;
+                break;
             }
         }
     }
@@ -62,12 +60,12 @@ async fn test_osc133_exit_code_capture() {
     let start = std::time::Instant::now();
 
     while start.elapsed() < timeout_duration {
-        if let Ok(Ok(event)) = timeout(Duration::from_millis(500), rx.recv()).await {
-            if let SessionEvent::Osc(termcmd_core::pty::OscEvent::CommandFinished { exit_code }) = event {
-                if exit_code == 42 {
-                    captured_exit_code = Some(exit_code);
-                    break;
-                }
+        if let Ok(Ok(SessionEvent::Osc(termcmd_core::pty::OscEvent::CommandFinished { exit_code }))) =
+            timeout(Duration::from_millis(500), rx.recv()).await
+        {
+            if exit_code == 42 {
+                captured_exit_code = Some(exit_code);
+                break;
             }
         }
     }
@@ -96,12 +94,10 @@ async fn test_osc7_cwd_tracking() {
     let start = std::time::Instant::now();
 
     while start.elapsed() < timeout_duration {
-        if let Ok(Ok(event)) = timeout(Duration::from_millis(500), rx.recv()).await {
-            if let SessionEvent::CwdChanged(cwd) = event {
-                if cwd == PathBuf::from("/tmp") {
-                    updated_cwd = Some(cwd);
-                    break;
-                }
+        if let Ok(Ok(SessionEvent::CwdChanged(cwd))) = timeout(Duration::from_millis(500), rx.recv()).await {
+            if cwd == Path::new("/tmp") {
+                updated_cwd = Some(cwd);
+                break;
             }
         }
     }
@@ -139,13 +135,11 @@ async fn test_sigint_process_isolation() {
     let start = std::time::Instant::now();
 
     while start.elapsed() < timeout_duration {
-        if let Ok(Ok(event)) = timeout(Duration::from_millis(500), rx.recv()).await {
-            if let SessionEvent::Output(bytes) = event {
-                let text = String::from_utf8_lossy(&bytes);
-                if text.contains("STATUS:130") {
-                    captured_status = true;
-                    break;
-                }
+        if let Ok(Ok(SessionEvent::Output(bytes))) = timeout(Duration::from_millis(500), rx.recv()).await {
+            let text = String::from_utf8_lossy(&bytes);
+            if text.contains("STATUS:130") {
+                captured_status = true;
+                break;
             }
         }
     }

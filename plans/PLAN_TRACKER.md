@@ -48,13 +48,14 @@
 
 ---
 
-### Phase 4: Desktop Canvas UI & Kitty Aesthetics [PLANNED / READY FOR EXECUTION]
-- [ ] **Frontend Scaffold**: Vite + TypeScript + Kitty Tokyo Night design tokens.
-- [ ] **Dynamic Tiling Grid**: Columns-per-row controller (`1`, `2`, `3`, `4` cols), top-insertion rule, infinite vertical scroll container, direct edge and corner drag-resizing with dynamic adjacent tile reflow.
-- [ ] **Terminal Tile & Linux Header**: Linux top-right controls (`_ □ ✕`), dynamic status badges, copy-on-select clipboard integration, and in-tile buffer search (`Ctrl+Shift+F`).
-- [ ] **Kitty Spring-Physics Cursor Shader**: WebGL/Canvas overlay tracking xterm cursor jumps with velocity-based decay.
-- [ ] **Collapsible Sidebar Organizer**: Session tree, double-click to pin/move to top, instant remove buttons, and 3 sorting modes (Running Priority, MRU, Creation).
-- [ ] **Dock Tray & Keybindings**: Minimized window dock tray and global shortcut manager (`Ctrl+Alt+N`, `Ctrl+Alt+1..4`, etc.).
+### Phase 4: Desktop Canvas UI & Kitty Aesthetics [COMPLETED]
+- [x] **Frontend Scaffold**: Vite + TypeScript + Kitty Tokyo Night design tokens.
+- [x] **Dynamic Tiling Grid**: Columns-per-row controller (`1`, `2`, `3`, `4` cols), top-insertion rule, infinite vertical scroll container, direct edge and corner drag-resizing with dynamic adjacent tile reflow.
+- [x] **Terminal Tile & Linux Header**: Linux top-right controls (`_ □ ✕`), dynamic status badges, copy-on-select clipboard integration, and in-tile buffer search (`Ctrl+Shift+F`).
+- [x] **Kitty Spring-Physics Cursor Shader**: WebGL/Canvas overlay tracking xterm cursor jumps with velocity-based decay.
+- [x] **Collapsible Sidebar Organizer**: Session tree, double-click to pin/move to top, instant remove buttons, and 3 sorting modes (Running Priority, MRU, Creation).
+- [x] **Dock Tray & Keybindings**: Minimized window dock tray and global shortcut manager (`Ctrl+Alt+N`, `Ctrl+Alt+1..4`, etc.).
+- [x] **Automated Test Coverage**: 8 TypeScript unit tests passing (`npm test`), Vite production bundle builds cleanly (`npm run build`).
 
 ---
 

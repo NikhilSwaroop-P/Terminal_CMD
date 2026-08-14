@@ -84,13 +84,16 @@ async fn run_exec_stream(
     let full_command = format_command_with_env(&payload.command, payload.env.as_ref());
 
     let mut event_rx = session.subscribe();
+    while event_rx.try_recv().is_ok() {}
 
     let start_payload = ExecStartPayload {
         command: payload.command.clone(),
         timestamp: Utc::now(),
     };
     if let Ok(data) = serde_json::to_string(&start_payload) {
-        let _ = tx.send(Ok(Event::default().event("start").data(data))).await;
+        if tx.send(Ok(Event::default().event("start").data(data))).await.is_err() {
+            return;
+        }
     }
 
     if let Err(_err) = session.write_command(&full_command) {
@@ -133,7 +136,9 @@ async fn run_exec_stream(
                         idle_ms: last_activity.elapsed().as_millis() as u64,
                     };
                     if let Ok(data) = serde_json::to_string(&prompt_payload) {
-                        let _ = tx.send(Ok(Event::default().event("prompt_waiting").data(data))).await;
+                        if tx.send(Ok(Event::default().event("prompt_waiting").data(data))).await.is_err() {
+                            break;
+                        }
                     }
                     prompt_waiting_emitted = true;
                 }
@@ -154,21 +159,25 @@ async fn run_exec_stream(
                             last_activity = Instant::now();
                             prompt_waiting_emitted = false;
 
-                            let _ = tx.send(Ok(Event::default().event("stdout").data(clean_chunk))).await;
+                            if tx.send(Ok(Event::default().event("stdout").data(clean_chunk))).await.is_err() {
+                                break;
+                            }
                         }
                     }
 
                     Ok(SessionEvent::Osc(OscEvent::CommandFinished { exit_code })) => {
-                        let done_payload = ExecDonePayload {
-                            exit_code,
-                            duration_ms: start_instant.elapsed().as_millis() as u64,
-                            command: payload.command.clone(),
-                            cwd: session.cwd().to_string_lossy().to_string(),
-                        };
-                        if let Ok(data) = serde_json::to_string(&done_payload) {
-                            let _ = tx.send(Ok(Event::default().event("done").data(data))).await;
+                        if start_instant.elapsed() > Duration::from_millis(50) || exit_code != 0 {
+                            let done_payload = ExecDonePayload {
+                                exit_code,
+                                duration_ms: start_instant.elapsed().as_millis() as u64,
+                                command: payload.command.clone(),
+                                cwd: session.cwd().to_string_lossy().to_string(),
+                            };
+                            if let Ok(data) = serde_json::to_string(&done_payload) {
+                                let _ = tx.send(Ok(Event::default().event("done").data(data))).await;
+                            }
+                            break;
                         }
-                        break;
                     }
 
                     Ok(SessionEvent::Terminated { exit_code }) => {

@@ -1,0 +1,205 @@
+.sidebar-container {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100%;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-smooth), transform var(--transition-smooth), opacity var(--transition-smooth);
+  z-index: 40;
+  overflow: hidden;
+}
+
+.sidebar-container.collapsed {
+  width: 0;
+  min-width: 0;
+  transform: translateX(-100%);
+  opacity: 0;
+  border-right: none;
+}
+
+.sidebar-section {
+  padding: 14px 14px 8px 14px;
+}
+
+.sidebar-section-title {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sort-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.sort-select {
+  width: 100%;
+  height: 34px;
+  background: #161c26;
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-md);
+  color: var(--accent-cyan);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.sort-select-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-cyan);
+  pointer-events: none;
+  font-size: 10px;
+}
+
+.sort-select option {
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
+}
+
+.session-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.session-list-scroll::-webkit-scrollbar-thumb {
+  background: #212836;
+  border-radius: 3px;
+}
+
+.sidebar-session-card {
+  height: 66px;
+  background: #141c26;
+  border: 1.5px solid var(--border-idle);
+  border-radius: var(--radius-lg);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-session-card:hover {
+  background: #182230;
+  border-color: var(--border-active);
+}
+
+.sidebar-session-card.active-terminal {
+  border-color: var(--accent-cyan);
+  background: #1a2433;
+}
+
+.sidebar-session-card.state-streaming, .sidebar-session-card.state-running {
+  border-color: var(--border-streaming);
+}
+
+.sidebar-session-card.state-terminated {
+  border-color: var(--border-subtle);
+  opacity: 0.75;
+}
+
+.session-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.session-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.session-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-amber);
+  flex-shrink: 0;
+}
+
+.session-pulse-dot.dot-running, .session-pulse-dot.dot-streaming {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 6px var(--accent-emerald);
+}
+
+.session-pulse-dot.dot-idle {
+  background: var(--accent-amber);
+}
+
+.session-pulse-dot.dot-terminated {
+  background: var(--accent-coral);
+}
+
+.session-title-text {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-sidebar-kill {
+  width: 22px;
+  height: 22px;
+  background: #21262d;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-sidebar-kill:hover {
+  background: #2d1519;
+  color: var(--accent-coral);
+}
+
+.session-card-body {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-card-hint {
+  font-size: 9px;
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+}

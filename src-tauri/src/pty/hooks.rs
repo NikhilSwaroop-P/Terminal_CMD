@@ -8,23 +8,16 @@ use std::path::{Path, PathBuf};
 
 /// Shell integration script content for Bash.
 pub const BASH_INTEGRATION: &str = r#"
-__termcmd_prompt_start() {
-    local exit_code="${1:-0}"
-    printf "\033]133;D;%d\007" "$exit_code"
-    printf "\033]133;A\007"
-    printf "\033]7;file://%s%s\007" "${HOSTNAME:-localhost}" "$PWD"
-    __termcmd_in_prompt=1
+__termcmd_postexec() {
+    local exit_code=$?
+    printf "\033]133;D;%d\007\033]133;A\007\033]7;file://%s%s\007" "$exit_code" "${HOSTNAME:-localhost}" "$PWD"
 }
-__termcmd_preexec() {
-    if [ -n "${__termcmd_in_prompt:-}" ]; then
-        unset __termcmd_in_prompt
-        printf "\033]133;C\007"
-    fi
-    return 0
-}
-PROMPT_COMMAND='__termcmd_prompt_start "$?"'
+if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" =~ "declare -a" ]]; then
+    PROMPT_COMMAND=(__termcmd_postexec "${PROMPT_COMMAND[@]}")
+else
+    PROMPT_COMMAND="__termcmd_postexec; ${PROMPT_COMMAND:-}"
+fi
 PS1="\[\033]133;B\007\]$PS1"
-trap '__termcmd_preexec' DEBUG
 "#;
 
 /// Shell integration script content for Zsh.
@@ -157,7 +150,7 @@ mod tests {
         assert!(init.is_some());
         if let Some(ShellInit::BashFile(file)) = init {
             let content = fs::read_to_string(file.path()).expect("read script");
-            assert!(content.contains("__termcmd_prompt_start"));
+            assert!(content.contains("__termcmd_postexec"));
             assert!(content.contains("133;A"));
         } else {
             panic!("Expected BashFile");

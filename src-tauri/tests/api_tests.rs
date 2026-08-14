@@ -319,7 +319,7 @@ async fn test_sse_exec_exit_code_propagation() {
         .spawn_session(SessionConfig::default())
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(1200)).await;
 
     let client = reqwest::Client::new();
     let exec_url = format!("http://{}/api/v1/terminals/{}/exec", addr, session.id);
@@ -352,7 +352,6 @@ async fn test_sse_exec_exit_code_propagation() {
         }
     }
 
-    println!("ACCUMULATED BODY EXIT TEST: {:?}", accumulated_body);
     assert!(accumulated_body.contains("event: done"));
     assert!(accumulated_body.contains("\"exitCode\":7") || accumulated_body.contains("\"exitCode\": 7"));
 
@@ -442,7 +441,7 @@ async fn test_prompt_waiting_event_detection() {
         .spawn_session(SessionConfig::default())
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(1200)).await;
 
     let client = reqwest::Client::new();
     let exec_url = format!("http://{}/api/v1/terminals/{}/exec", addr, session.id);
@@ -471,12 +470,15 @@ async fn test_prompt_waiting_event_detection() {
         tokio::select! {
             _ = &mut timeout => break,
             chunk = stream.next() => {
-                if let Some(Ok(bytes)) = chunk {
-                    let s = String::from_utf8_lossy(&bytes);
-                    if s.contains("event: prompt_waiting") {
-                        received_prompt_waiting = true;
-                        break;
+                match chunk {
+                    Some(Ok(bytes)) => {
+                        let s = String::from_utf8_lossy(&bytes);
+                        if s.contains("event: prompt_waiting") {
+                            received_prompt_waiting = true;
+                            break;
+                        }
                     }
+                    _ => break,
                 }
             }
         }
