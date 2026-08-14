@@ -10,6 +10,7 @@
 - **Visual Mockups**: [`docs/mockups/`](../docs/mockups/)
 - **Phase 1 Execution Plan**: [`plans/PHASE_1_EXECUTION_PLAN.md`](PHASE_1_EXECUTION_PLAN.md)
 - **Phase 2 Execution Plan**: [`plans/PHASE_2_EXECUTION_PLAN.md`](PHASE_2_EXECUTION_PLAN.md)
+- **Phase 3 Execution Plan**: [`plans/PHASE_3_EXECUTION_PLAN.md`](PHASE_3_EXECUTION_PLAN.md)
 
 ---
 
@@ -28,29 +29,21 @@
 
 ---
 
-### Phase 2: Tauri 2.0 & Rust Core PTY Engine [PLANNED / READY FOR EXECUTION]
-- [ ] **Tauri 2.0 Project Scaffold**: Initialize `src-tauri` with Cargo dependencies (`portable-pty`, `tokio`, `axum`, `serde`, `tower-http`).
-- [ ] **PTY Process Supervisor**: Implementation of `portable_pty::PtyPair` lifecycle, non-blocking asynchronous reader loops, process group signal dispatching (`SIGINT`, `SIGTERM`, `SIGKILL`).
-- [ ] **OSC 133 & OSC 7 Byte Parser**: Zero-allocation state machine for prompt boundaries, command exit code capture, and dynamic CWD tracking.
-- [ ] **Ring Buffer Storage**: 50,000-line circular buffer per terminal session for instant re-attachment and historical inspection.
+### Phase 2: Tauri 2.0 & Rust Core PTY Engine [COMPLETED]
+- [x] **Tauri 2.0 Project Scaffold**: Initialize `src-tauri` with Cargo dependencies (`portable-pty`, `tokio`, `serde`, `parking_lot`, `bytes`, `nix`).
+- [x] **PTY Process Supervisor**: Implementation of `portable_pty::PtyPair` lifecycle, non-blocking asynchronous reader loops, process group signal dispatching (`SIGINT`, `SIGTERM`, `SIGKILL`).
+- [x] **OSC 133 & OSC 7 Byte Parser**: Zero-allocation state machine for prompt boundaries, command exit code capture, and dynamic CWD tracking.
+- [x] **Ring Buffer Storage**: 50,000-line circular buffer per terminal session for instant re-attachment and historical inspection.
+- [x] **Automated Test Coverage**: 16 Rust unit and integration tests passing (`cargo test`).
 
 ---
 
-### Phase 3: Embedded Local Agent API & Dual Streaming
-- [ ] **Axum Server Setup**: Localhost loopback binding (`127.0.0.1:7890`) with bearer token authentication.
-- [ ] **REST Endpoints**:
-  - `POST /api/v1/terminals` (Create session).
-  - `GET /api/v1/terminals` (List all sessions & active PIDs).
-  - `GET /api/v1/terminals/:id` (Inspect session metadata & buffer snapshot).
-  - `POST /api/v1/terminals/:id/resize` (`SIGWINCH` dimensions).
-  - `POST /api/v1/terminals/:id/input` (Raw stdin / keystrokes).
-  - `POST /api/v1/terminals/:id/kill` (Process group interrupt).
-  - `DELETE /api/v1/terminals/:id` (Close & destroy session).
-- [ ] **SSE Streaming Protocol (`/exec`)**:
-  - Real-time stdout/stderr event streaming.
-  - `strip_ansi` token optimization for LLM agents.
-  - Interactive prompt detection (`event: prompt_waiting`).
-  - Terminal busy concurrency guard (`409 Conflict`).
+### Phase 3: Embedded Local Agent API & Dual Streaming [PLANNED / READY FOR EXECUTION]
+- [ ] **Axum Server Setup**: Localhost loopback binding (`127.0.0.1:7890`) with bearer token authentication guard.
+- [ ] **REST Endpoints**: `/terminals` (create, list, inspect, resize, input, kill, close).
+- [ ] **SSE Dual-Streaming Protocol (`/exec`)**: Real-time stdout/stderr streaming, `stripAnsi` token optimization, interactive prompt detection (`event: prompt_waiting`), concurrency conflict guard (`409 Conflict`).
+- [ ] **WebSocket Protocol (`/ws`)**: Full-duplex bidirectional interactive raw streaming.
+- [ ] **Automated Test Coverage**: Unit and integration tests for API endpoints, SSE streams, authentication, and ANSI filtering.
 
 ---
 
