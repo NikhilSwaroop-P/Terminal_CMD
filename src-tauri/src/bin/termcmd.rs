@@ -412,7 +412,7 @@ async fn handle_input(
 
 async fn handle_kill(client: &Client, conn: &ConnectionInfo, id: String, signal: String) {
     let req = KillRequest {
-        signal: Some(signal),
+        signal: Some(signal.clone()),
     };
     let url = format!("{}/api/v1/terminals/{}/kill", conn.base_url, id);
     let resp = match client.post(&url).json(&req).send().await {
@@ -426,6 +426,8 @@ async fn handle_kill(client: &Client, conn: &ConnectionInfo, id: String, signal:
     if !resp.status().is_success() {
         print_error_and_exit(resp).await;
     }
+
+    println!("Signal {} sent to terminal session {}", signal, id);
 }
 
 async fn handle_close(client: &Client, conn: &ConnectionInfo, id: String) {
@@ -441,6 +443,8 @@ async fn handle_close(client: &Client, conn: &ConnectionInfo, id: String) {
     if !resp.status().is_success() {
         print_error_and_exit(resp).await;
     }
+
+    println!("Terminal session {} closed", id);
 }
 
 async fn handle_snapshot(
@@ -500,6 +504,8 @@ async fn handle_resize(client: &Client, conn: &ConnectionInfo, id: String, cols:
     if !resp.status().is_success() {
         print_error_and_exit(resp).await;
     }
+
+    println!("Resized terminal session {} to {}x{}", id, cols, rows);
 }
 
 async fn print_error_and_exit(resp: reqwest::Response) -> ! {

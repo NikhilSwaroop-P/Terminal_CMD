@@ -70,9 +70,9 @@
 
 ---
 
-### Phase 6: Agent CLI Tool, Live Stream Pipe & Agent Skill [PLANNED / READY FOR EXECUTION]
-- [ ] **Agent CLI Binary (`termcmd`)**: Standalone, zero-config CLI automatically discovering local token and port.
-- [ ] **Real-Time Stdout SSE Streaming**: `termcmd exec <id> "<command>"` streaming output chunk-by-chunk in real-time and returning exact subprocess exit codes.
-- [ ] **CLI Subcommand Suite**: `spawn`, `list`, `exec`, `input`, `kill`, `close`, `snapshot`, `resize`.
-- [ ] **Antigravity Agent Skill (`SKILL.md`)**: Full skill definition empowering AI agents to control TermCMD seamlessly via the CLI.
-- [ ] **Automated CLI Integration Tests**: Comprehensive tests for CLI command execution, streaming, and signal forwarding.
+### Phase 6: Agent CLI Tool, Live Stream Pipe & Agent Skill [COMPLETED]
+- [x] **Agent CLI Binary (`termcmd-cli` / `termcli`)**: Standalone, zero-config CLI automatically discovering local token and port with multi-tier fallback.
+- [x] **Real-Time Stdout SSE Streaming**: `termcli exec <id> "<command>"` streaming output chunk-by-chunk in real-time and returning exact subprocess exit codes.
+- [x] **CLI Subcommand Suite**: `spawn`, `list`, `exec`, `input`, `kill`, `close`, `snapshot`, `resize`.
+- [x] **Universal Agent Skill (`skills/termcmd/SKILL.md`)**: Full skill definition empowering AI agents (Antigravity, Claude Code, Cursor, Cline, OpenCode, Aider) to control TermCMD seamlessly via the CLI.
+- [x] **Automated CLI Integration Tests (`src-tauri/tests/cli_tests.rs`)**: 6 comprehensive integration tests for CLI discovery, spawn, tabular/JSON list, streaming exec, exit code propagation, stdin input, snapshot, and close.

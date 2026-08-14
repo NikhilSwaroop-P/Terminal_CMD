@@ -1,19 +1,19 @@
-//! Automated Integration Tests for TermCMD Agent CLI Binary (`termcmd`).
+//! Automated Integration Tests for TermCMD Agent CLI Binary (`termcmd-cli`).
 //!
 //! Validates XDG/POSIX discovery, spawn, tabular & JSON listing, real-time
 //! streaming execution, exit code propagation, stdin input forwarding, and session cleanup.
 
-use std::process::Command;
 use std::time::Duration;
+use tokio::process::Command;
 
 use termcmd_core::api::auth::AuthState;
 use termcmd_core::api::discovery::{resolve_connection, resolve_port, resolve_token};
-use termcmd_core::pty::session::SessionInfo;
 use termcmd_core::api::start_server;
+use termcmd_core::pty::session::SessionInfo;
 use termcmd_core::state::AppState;
 
 fn cli_bin() -> &'static str {
-    env!("CARGO_BIN_EXE_termcmd")
+    env!("CARGO_BIN_EXE_termcmd-cli")
 }
 
 #[tokio::test]
@@ -67,6 +67,7 @@ async fn test_cli_spawn_and_list() {
             "30",
         ])
         .output()
+        .await
         .expect("failed to run termcmd spawn");
 
     assert!(
@@ -87,6 +88,7 @@ async fn test_cli_spawn_and_list() {
     let list_json_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "list", "--json"])
         .output()
+        .await
         .expect("failed to run termcmd list --json");
 
     assert!(list_json_output.status.success());
@@ -102,6 +104,7 @@ async fn test_cli_spawn_and_list() {
     let list_table_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "list"])
         .output()
+        .await
         .expect("failed to run termcmd list");
 
     assert!(list_table_output.status.success());
@@ -135,6 +138,7 @@ async fn test_cli_exec_streaming_output() {
             "Exec-Test-Terminal",
         ])
         .output()
+        .await
         .expect("spawn session");
 
     let session_id = String::from_utf8_lossy(&spawn_output.stdout)
@@ -154,6 +158,7 @@ async fn test_cli_exec_streaming_output() {
             "echo 'Live Streaming Line CLI Test'",
         ])
         .output()
+        .await
         .expect("exec command");
 
     assert!(
@@ -187,6 +192,7 @@ async fn test_cli_exit_code_propagation() {
     let spawn_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "spawn"])
         .output()
+        .await
         .expect("spawn session");
 
     let session_id = String::from_utf8_lossy(&spawn_output.stdout)
@@ -206,6 +212,7 @@ async fn test_cli_exit_code_propagation() {
             "sh -c 'exit 42'",
         ])
         .output()
+        .await
         .expect("exec command");
 
     assert_eq!(
@@ -233,6 +240,7 @@ async fn test_cli_snapshot_and_close() {
     let spawn_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "spawn"])
         .output()
+        .await
         .expect("spawn session");
 
     let session_id = String::from_utf8_lossy(&spawn_output.stdout)
@@ -251,7 +259,8 @@ async fn test_cli_snapshot_and_close() {
             &session_id,
             "echo 'Snapshot Buffer Marker'",
         ])
-        .output();
+        .output()
+        .await;
 
     let snapshot_output = Command::new(cli_bin())
         .args([
@@ -265,6 +274,7 @@ async fn test_cli_snapshot_and_close() {
             "10",
         ])
         .output()
+        .await
         .expect("snapshot session");
 
     assert!(snapshot_output.status.success());
@@ -281,6 +291,7 @@ async fn test_cli_snapshot_and_close() {
             &session_id,
         ])
         .output()
+        .await
         .expect("close session");
 
     assert!(close_output.status.success());
@@ -288,6 +299,7 @@ async fn test_cli_snapshot_and_close() {
     let list_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "list", "--json"])
         .output()
+        .await
         .expect("list session");
 
     let terminals: Vec<SessionInfo> =
@@ -312,6 +324,7 @@ async fn test_cli_interactive_input() {
     let spawn_output = Command::new(cli_bin())
         .args(["--url", &base_url, "--token", token, "spawn"])
         .output()
+        .await
         .expect("spawn session");
 
     let session_id = String::from_utf8_lossy(&spawn_output.stdout)
@@ -331,6 +344,7 @@ async fn test_cli_interactive_input() {
             "echo 'interactive_verified'",
         ])
         .output()
+        .await
         .expect("send input");
 
     assert!(input_output.status.success());
@@ -347,6 +361,7 @@ async fn test_cli_interactive_input() {
             &session_id,
         ])
         .output()
+        .await
         .expect("get snapshot");
 
     assert!(snapshot_output.status.success());

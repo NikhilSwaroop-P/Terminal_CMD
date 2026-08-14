@@ -68,9 +68,15 @@ async fn test_sigint_process_group_cleanup() {
     tokio::time::sleep(Duration::from_millis(300)).await;
     
     session.write_command("sleep 50").expect("write command");
-    tokio::time::sleep(Duration::from_millis(600)).await;
+    let mut descendants_before = Vec::new();
+    for _ in 0..20 {
+        descendants_before = get_descendant_pids(main_pid);
+        if !descendants_before.is_empty() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
     
-    let descendants_before = get_descendant_pids(main_pid);
     assert!(!descendants_before.is_empty(), "Expected at least 1 child process under parent PID {}", main_pid);
     
     session.send_sigint().expect("send sigint");
