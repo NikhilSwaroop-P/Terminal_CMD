@@ -352,6 +352,7 @@ async fn test_sse_exec_exit_code_propagation() {
         }
     }
 
+    println!("ACCUMULATED BODY EXIT TEST: {:?}", accumulated_body);
     assert!(accumulated_body.contains("event: done"));
     assert!(accumulated_body.contains("\"exitCode\":7") || accumulated_body.contains("\"exitCode\": 7"));
 
