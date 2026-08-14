@@ -117,6 +117,7 @@ export async function bootstrapApp(): Promise<void> {
   keybindings.attach();
 
   try {
+    await apiClient.ensureValidToken();
     const existing = await apiClient.listTerminals();
     if (existing.length > 0) {
       existing.forEach((term: TerminalSessionInfo) => canvas.addTerminal(term));

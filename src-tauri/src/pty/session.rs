@@ -174,6 +174,7 @@ impl PtySession {
                     Some(ShellInit::ZshDir(temp_dir))
                 }
                 Some(ShellInit::FishFile(script_file)) => {
+                    cmd.arg("--features=no-query-terminal");
                     cmd.arg("--init-command");
                     cmd.arg(format!("source {}", script_file.path().display()));
                     cmd.arg("-i");
@@ -257,11 +258,8 @@ impl PtySession {
                             session.buffer.write().push_chunk(chunk);
                             let _ = event_tx.send(SessionEvent::Output(chunk.to_vec()));
 
-                            if chunk.windows(3).any(|w| w == b"\x1b[c") || chunk.windows(4).any(|w| w == b"\x1b[0c") {
-                                let _ = session.write_all(b"\x1b[?62;1;2;6;7;8;9c");
-                            }
-                            if chunk.windows(4).any(|w| w == b"\x1b[>0c" || w == b"\x1b[>0q") || chunk.windows(3).any(|w| w == b"\x1b[>c") {
-                                let _ = session.write_all(b"\x1b[>0;10;1c");
+                            if chunk == b"\x1b[0c" || chunk == b"\x1b[c" || chunk.ends_with(b"\x1b[0c") || chunk.ends_with(b"\x1b[c") {
+                                let _ = session.write_all(b"\x1b[?1;0c");
                             }
 
                             let osc_events = osc_parser.parse_chunk(chunk);
@@ -343,14 +341,15 @@ impl PtySession {
             *self.state.write() = SessionState::Running { command: Some(trimmed.to_string()) };
         }
 
-        let mut full_cmd = command.to_string();
-        if full_cmd.ends_with('\n') {
-            full_cmd.pop();
-        }
+        let normalized = command.replace("\r\n", "\r").replace('\n', "\r");
+        let mut full_cmd = normalized;
         if !full_cmd.ends_with('\r') {
             full_cmd.push('\r');
         }
-        self.write_all(full_cmd.as_bytes())
+        let mut bytes_to_write = Vec::with_capacity(full_cmd.len() + 1);
+        bytes_to_write.push(0x15);
+        bytes_to_write.extend_from_slice(full_cmd.as_bytes());
+        self.write_all(&bytes_to_write)
     }
 
     /// Resizes the PTY dimensions and notifies kernel/slaves with `SIGWINCH`.
@@ -382,8 +381,10 @@ impl PtySession {
     /// Sends an arbitrary POSIX signal to the child process group.
     pub fn send_signal(&self, sig: Signal) -> std::io::Result<()> {
         if let Some(pid_val) = self.pid {
-            signal::killpg(Pid::from_raw(pid_val as i32), sig)
-                .map_err(|e| std::io::Error::other(e.to_string()))?;
+            let pid = Pid::from_raw(pid_val as i32);
+            if signal::killpg(pid, sig).is_err() {
+                let _ = signal::kill(pid, sig);
+            }
         }
         Ok(())
     }

@@ -407,6 +407,7 @@ export class Canvas {
     const current = this.tiles.get(id);
     if (current) {
       current.focus();
+      current.getElement().scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     this.callbacks.onActiveTerminalChange?.(id);
   }
@@ -555,6 +556,9 @@ export class Canvas {
         tile.destroy();
         this.tiles.delete(id);
         this.sessionInfos.delete(id);
+        if (this.activeTerminalId === id) {
+          this.activeTerminalId = null;
+        }
       }
     }
 

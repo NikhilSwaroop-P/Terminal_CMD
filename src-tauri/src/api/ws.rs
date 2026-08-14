@@ -40,15 +40,27 @@ async fn handle_socket(socket: WebSocket, session: Arc<PtySession>) {
     let (mut ws_sender, mut ws_receiver) = socket.split();
     let mut event_rx = session.subscribe();
 
+    let initial_snapshot = session.get_buffer_snapshot();
+    if !initial_snapshot.is_empty() {
+        let initial_bytes = initial_snapshot.join("\r\n");
+        if !initial_bytes.is_empty() {
+            let _ = ws_sender.send(Message::Binary(initial_bytes.into_bytes())).await;
+        }
+    }
+
     let session_writer = session.clone();
     let mut receive_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = ws_receiver.next().await {
             match msg {
                 Message::Text(text) => {
-                    let _ = session_writer.write_all(text.as_bytes());
+                    if !text.starts_with("\x1b]10;") && !text.starts_with("\x1b]11;") {
+                        let _ = session_writer.write_all(text.as_bytes());
+                    }
                 }
                 Message::Binary(bytes) => {
-                    let _ = session_writer.write_all(&bytes);
+                    if !bytes.starts_with(b"\x1b]10;") && !bytes.starts_with(b"\x1b]11;") {
+                        let _ = session_writer.write_all(&bytes);
+                    }
                 }
                 Message::Close(_) => break,
                 _ => {}

@@ -214,8 +214,8 @@ fn format_command_with_env(command: &str, env: Option<&HashMap<String, String>>)
         Some(vars) if !vars.is_empty() => {
             let mut prefix = String::from("env ");
             for (k, v) in vars {
-                let escaped_val = v.replace('"', "\\\"");
-                prefix.push_str(&format!("{}=\"{}\" ", k, escaped_val));
+                let escaped_val = v.replace('\'', "'\\''");
+                prefix.push_str(&format!("{}='{}' ", k, escaped_val));
             }
             format!("{}{}", prefix, command)
         }
