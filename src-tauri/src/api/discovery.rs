@@ -107,6 +107,14 @@ pub fn resolve_token() -> Result<String, String> {
     )
 }
 
+fn is_port_reachable(port: u16) -> bool {
+    std::net::TcpStream::connect_timeout(
+        &std::net::SocketAddr::from(([127, 0, 0, 1], port)),
+        std::time::Duration::from_millis(60),
+    )
+    .is_ok()
+}
+
 /// Discovers the active API port from environment, XDG runtime, config, or temp files.
 pub fn resolve_port() -> u16 {
     if let Ok(port_str) = std::env::var("TERMCMD_PORT") {
@@ -115,52 +123,72 @@ pub fn resolve_port() -> u16 {
         }
     }
 
+    let mut candidate_port: Option<u16> = None;
+
     if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
         let p = PathBuf::from(runtime_dir).join("termcmd.port");
         if let Ok(content) = fs::read_to_string(&p) {
             if let Ok(port) = content.trim().parse::<u16>() {
-                return port;
+                candidate_port = Some(port);
             }
         }
     }
 
-    if let Ok(config_home) = std::env::var("XDG_CONFIG_HOME") {
-        let p = PathBuf::from(config_home).join("termcmd").join("port");
+    if candidate_port.is_none() {
+        if let Ok(config_home) = std::env::var("XDG_CONFIG_HOME") {
+            let p = PathBuf::from(config_home).join("termcmd").join("port");
+            if let Ok(content) = fs::read_to_string(&p) {
+                if let Ok(port) = content.trim().parse::<u16>() {
+                    candidate_port = Some(port);
+                }
+            }
+        }
+    }
+
+    if candidate_port.is_none() {
+        if let Ok(home) = std::env::var("HOME") {
+            let p = PathBuf::from(home).join(".config").join("termcmd").join("port");
+            if let Ok(content) = fs::read_to_string(&p) {
+                if let Ok(port) = content.trim().parse::<u16>() {
+                    candidate_port = Some(port);
+                }
+            }
+        }
+    }
+
+    if candidate_port.is_none() {
+        #[cfg(unix)]
+        {
+            let uid = nix::unistd::getuid();
+            let p = PathBuf::from(format!("/tmp/termcmd-{}/port", uid));
+            if let Ok(content) = fs::read_to_string(&p) {
+                if let Ok(port) = content.trim().parse::<u16>() {
+                    candidate_port = Some(port);
+                }
+            }
+        }
+    }
+
+    if candidate_port.is_none() {
+        let p = std::env::temp_dir().join("termcmd.port");
         if let Ok(content) = fs::read_to_string(&p) {
             if let Ok(port) = content.trim().parse::<u16>() {
-                return port;
+                candidate_port = Some(port);
             }
         }
     }
 
-    if let Ok(home) = std::env::var("HOME") {
-        let p = PathBuf::from(home).join(".config").join("termcmd").join("port");
-        if let Ok(content) = fs::read_to_string(&p) {
-            if let Ok(port) = content.trim().parse::<u16>() {
-                return port;
-            }
-        }
-    }
-
-    #[cfg(unix)]
-    {
-        let uid = nix::unistd::getuid();
-        let p = PathBuf::from(format!("/tmp/termcmd-{}/port", uid));
-        if let Ok(content) = fs::read_to_string(&p) {
-            if let Ok(port) = content.trim().parse::<u16>() {
-                return port;
-            }
-        }
-    }
-
-    let p = std::env::temp_dir().join("termcmd.port");
-    if let Ok(content) = fs::read_to_string(&p) {
-        if let Ok(port) = content.trim().parse::<u16>() {
+    if let Some(port) = candidate_port {
+        if is_port_reachable(port) {
             return port;
         }
     }
 
-    crate::api::DEFAULT_API_PORT
+    if is_port_reachable(crate::api::DEFAULT_API_PORT) {
+        return crate::api::DEFAULT_API_PORT;
+    }
+
+    candidate_port.unwrap_or(crate::api::DEFAULT_API_PORT)
 }
 
 /// Persists the active API port to standard discovery locations.
