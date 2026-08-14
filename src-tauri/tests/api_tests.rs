@@ -262,10 +262,16 @@ async fn test_sse_exec_streaming_success() {
 
     let session = app_state
         .pty_manager
-        .spawn_session(SessionConfig::default())
+        .spawn_session(SessionConfig {
+            shell: Some("/bin/bash".to_string()),
+            ..SessionConfig::default()
+        })
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    let wait_start = std::time::Instant::now();
+    while session.state() != termcmd_core::pty::SessionState::Idle && wait_start.elapsed() < Duration::from_secs(3) {
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
 
     let client = reqwest::Client::new();
     let exec_url = format!("http://{}/api/v1/terminals/{}/exec", addr, session.id);
@@ -316,10 +322,13 @@ async fn test_sse_exec_exit_code_propagation() {
 
     let session = app_state
         .pty_manager
-        .spawn_session(SessionConfig::default())
+        .spawn_session(SessionConfig {
+            shell: Some("/bin/bash".to_string()),
+            ..SessionConfig::default()
+        })
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(1200)).await;
+    tokio::time::sleep(Duration::from_millis(2200)).await;
 
     let client = reqwest::Client::new();
     let exec_url = format!("http://{}/api/v1/terminals/{}/exec", addr, session.id);
@@ -336,7 +345,11 @@ async fn test_sse_exec_exit_code_propagation() {
         .await
         .unwrap();
 
-    assert_eq!(res.status(), reqwest::StatusCode::OK);
+    let status = res.status();
+    if status != reqwest::StatusCode::OK {
+        let err_body = res.text().await.unwrap();
+        panic!("Non-200 Status: {}, Body: {}", status, err_body);
+    }
 
     let mut stream = res.bytes_stream();
     use futures_util::StreamExt;
@@ -352,8 +365,8 @@ async fn test_sse_exec_exit_code_propagation() {
         }
     }
 
-    assert!(accumulated_body.contains("event: done"));
-    assert!(accumulated_body.contains("\"exitCode\":7") || accumulated_body.contains("\"exitCode\": 7"));
+    assert!(accumulated_body.contains("event: done"), "Body: {}", accumulated_body);
+    assert!(accumulated_body.contains("\"exitCode\":7") || accumulated_body.contains("\"exitCode\": 7"), "Body: {}", accumulated_body);
 
     server_handle.abort();
 }
@@ -384,10 +397,13 @@ async fn test_ws_terminal_streaming() {
 
     let session = app_state
         .pty_manager
-        .spawn_session(SessionConfig::default())
+        .spawn_session(SessionConfig {
+            shell: Some("/bin/bash".to_string()),
+            ..SessionConfig::default()
+        })
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(1500)).await;
 
     let ws_url = format!("ws://{}/api/v1/terminals/{}/ws?token={}", addr, session.id, test_token);
     let (ws_stream, _) = connect_async(ws_url).await.unwrap();
@@ -438,10 +454,13 @@ async fn test_prompt_waiting_event_detection() {
 
     let session = app_state
         .pty_manager
-        .spawn_session(SessionConfig::default())
+        .spawn_session(SessionConfig {
+            shell: Some("/bin/bash".to_string()),
+            ..SessionConfig::default()
+        })
         .unwrap();
 
-    tokio::time::sleep(Duration::from_millis(1200)).await;
+    tokio::time::sleep(Duration::from_millis(2200)).await;
 
     let client = reqwest::Client::new();
     let exec_url = format!("http://{}/api/v1/terminals/{}/exec", addr, session.id);

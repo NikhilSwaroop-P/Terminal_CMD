@@ -2,13 +2,14 @@ import { Terminal, ITerminalOptions } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { SearchAddon } from '@xterm/addon-search';
 import { WebglAddon } from '@xterm/addon-webgl';
+import { ImageAddon } from '@xterm/addon-image';
 import { PtyWebSocket } from '../services/PtyWebSocket';
 import { ClipboardService } from '../services/ClipboardService';
 import { CursorTrail } from '../effects/CursorTrail';
 import { SearchOverlay } from './SearchOverlay';
 
 /**
- * High-performance xterm.js instance with WebGL acceleration, search, and spring cursor trailing.
+ * High-performance xterm.js instance with WebGL acceleration, inline image rendering, and smooth cursor trailing.
  */
 export class TerminalInstance {
   public readonly id: string;
@@ -19,6 +20,7 @@ export class TerminalInstance {
   private fitAddon: FitAddon;
   private searchAddon: SearchAddon;
   private webglAddon: WebglAddon | null = null;
+  private imageAddon: ImageAddon | null = null;
   private ws: PtyWebSocket;
   private cursorTrail: CursorTrail;
   private searchOverlay: SearchOverlay;
@@ -45,8 +47,8 @@ export class TerminalInstance {
     wrapper.appendChild(this.canvasOverlay);
 
     const themeOptions: ITerminalOptions = {
-      fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace',
-      fontSize: 12.5,
+      fontFamily: '"JetBrainsMono Nerd Font", "JetBrainsMono NF", "FiraCode Nerd Font", "Symbols Nerd Font Mono", "JetBrains Mono", "Fira Code", monospace',
+      fontSize: 13,
       lineHeight: 1.25,
       cursorBlink: true,
       cursorStyle: 'bar',
@@ -66,7 +68,7 @@ export class TerminalInstance {
         magenta: '#bc8cff',
         cyan: '#39c5cf',
         white: '#d1d7e0',
-        brightBlack: '#6e7681',
+        brightBlack: '#565f89',
         brightRed: '#ff7b72',
         brightGreen: '#56d364',
         brightYellow: '#e3b341',
@@ -83,6 +85,13 @@ export class TerminalInstance {
 
     this.term.loadAddon(this.fitAddon);
     this.term.loadAddon(this.searchAddon);
+
+    try {
+      this.imageAddon = new ImageAddon();
+      this.term.loadAddon(this.imageAddon);
+    } catch {
+      this.imageAddon = null;
+    }
 
     this.term.open(this.xtermElement);
 
@@ -108,12 +117,31 @@ export class TerminalInstance {
     });
 
     this.ws.onData(data => {
-      if (typeof data === 'string') {
-        this.term.write(data);
-      } else {
-        this.term.write(data);
+      this.term.write(data, () => {
+        this.updateCursorTrail();
+      });
+    });
+
+    this.xtermElement.addEventListener('paste', (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text');
+      if (text) {
+        e.preventDefault();
+        this.term.paste(text);
       }
-      this.updateCursorTrail();
+    });
+
+    this.term.attachCustomKeyEventHandler((e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        if (e.type === 'keydown') {
+          ClipboardService.pasteText().then(text => {
+            if (text) {
+              this.term.paste(text);
+            }
+          });
+        }
+        return false;
+      }
+      return true;
     });
 
     this.term.onSelectionChange(() => {
@@ -124,6 +152,14 @@ export class TerminalInstance {
     });
 
     this.term.onCursorMove(() => {
+      this.updateCursorTrail();
+    });
+
+    this.term.onRender(() => {
+      this.updateCursorTrail();
+    });
+
+    this.term.onLineFeed(() => {
       this.updateCursorTrail();
     });
 
@@ -140,20 +176,33 @@ export class TerminalInstance {
   public updateCursorTrail(): void {
     if (this.isDisposed) return;
 
+    const core = (this.term as any)._core;
+    const renderService = core?._renderService;
+    const cellWidth =
+      renderService?.dimensions?.css?.cell?.width ||
+      (this.term.cols > 0 ? this.xtermElement.clientWidth / this.term.cols : 7.8);
+    const cellHeight =
+      renderService?.dimensions?.css?.cell?.height ||
+      (this.term.rows > 0 ? this.xtermElement.clientHeight / this.term.rows : 16);
+
     const buffer = this.term.buffer.active;
     const cursorX = buffer.cursorX;
     const cursorY = buffer.cursorY;
 
-    const cellWidth = (this.term as any)._core?._renderService?.dimensions?.css?.cell?.width || 7.5;
-    const cellHeight = (this.term as any)._core?._renderService?.dimensions?.css?.cell?.height || 16;
+    const overlayRect = this.canvasOverlay.getBoundingClientRect();
+    const screenElement = (this.xtermElement.querySelector('.xterm-screen') || this.xtermElement) as HTMLElement;
+    const screenRect = screenElement.getBoundingClientRect();
 
-    const posX = cursorX * cellWidth;
-    const posY = cursorY * cellHeight;
+    const offsetX = Math.max(0, screenRect.left - overlayRect.left);
+    const offsetY = Math.max(0, screenRect.top - overlayRect.top);
+
+    const posX = offsetX + cursorX * cellWidth;
+    const posY = offsetY + cursorY * cellHeight;
 
     this.cursorTrail.setCursorPosition({
       x: posX,
       y: posY,
-      width: cellWidth,
+      width: 2,
       height: cellHeight
     });
   }
@@ -179,7 +228,7 @@ export class TerminalInstance {
   }
 
   /**
-   * Sets focus to xterm buffer.
+   * Focuses terminal instance.
    */
   public focus(): void {
     if (!this.isDisposed) {
@@ -188,7 +237,16 @@ export class TerminalInstance {
   }
 
   /**
-   * Clears xterm buffer display.
+   * Blurs terminal instance.
+   */
+  public blur(): void {
+    if (!this.isDisposed) {
+      this.term.blur();
+    }
+  }
+
+  /**
+   * Clears terminal buffer.
    */
   public clear(): void {
     if (!this.isDisposed) {
@@ -197,31 +255,14 @@ export class TerminalInstance {
   }
 
   /**
-   * Toggles in-tile search widget.
+   * Toggles in-tile search widget overlay.
    */
   public toggleSearch(): void {
     this.searchOverlay.toggle();
   }
 
   /**
-   * Returns current column and row metrics.
-   */
-  public getDimensions(): { cols: number; rows: number } {
-    return { cols: this.term.cols, rows: this.term.rows };
-  }
-
-  /**
-   * Registers title change listener.
-   */
-  public onTitleChange(listener: (title: string) => void): () => void {
-    this.onTitleChangeListeners.push(listener);
-    return () => {
-      this.onTitleChangeListeners = this.onTitleChangeListeners.filter(l => l !== listener);
-    };
-  }
-
-  /**
-   * Registers working directory change listener.
+   * Registers CWD update listener.
    */
   public onCwdChange(listener: (cwd: string) => void): () => void {
     this.onCwdChangeListeners.push(listener);
@@ -231,27 +272,55 @@ export class TerminalInstance {
   }
 
   /**
-   * Writes raw string data to the local terminal buffer.
+   * Registers title update listener.
    */
-  public write(data: string | Uint8Array): void {
-    if (!this.isDisposed) {
-      this.term.write(data);
-    }
+  public onTitleChange(listener: (title: string) => void): () => void {
+    this.onTitleChangeListeners.push(listener);
+    return () => {
+      this.onTitleChangeListeners = this.onTitleChangeListeners.filter(l => l !== listener);
+    };
   }
 
   /**
-   * Disposes xterm, WebGL addon, WebSocket, and shaders.
+   * Disposes xterm instance, addons, and websocket connection.
    */
-  public destroy(): void {
+  public dispose(): void {
+    if (this.isDisposed) return;
     this.isDisposed = true;
-    this.ws.close();
+
     this.cursorTrail.destroy();
+    this.searchOverlay.destroy();
+    this.ws.close();
+
+    if (this.imageAddon) {
+      try {
+        this.imageAddon.dispose();
+      } catch {}
+    }
+
     if (this.webglAddon) {
       try {
         this.webglAddon.dispose();
       } catch {}
     }
-    this.term.dispose();
-    this.container.innerHTML = '';
+
+    try {
+      this.fitAddon.dispose();
+    } catch {}
+
+    try {
+      this.searchAddon.dispose();
+    } catch {}
+
+    try {
+      this.term.dispose();
+    } catch {}
+  }
+
+  /**
+   * Destroys terminal instance.
+   */
+  public destroy(): void {
+    this.dispose();
   }
 }

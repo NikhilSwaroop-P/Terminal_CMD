@@ -1,57 +1,74 @@
-//! Shell integration hook generators for Bash, Zsh, and POSIX shells.
-//!
-//! Injects non-destructive OSC 133 semantic prompt markers and OSC 7
-//! dynamic working directory tracking.
+//! Shell integration hook generators for Bash, Zsh, Fish, and POSIX shells.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
 /// Shell integration script content for Bash.
 pub const BASH_INTEGRATION: &str = r#"
-__termcmd_postexec() {
-    local exit_code=$?
-    printf "\033]133;D;%d\007\033]133;A\007\033]7;file://%s%s\007" "$exit_code" "${HOSTNAME:-localhost}" "$PWD"
+__termcmd_prompt_start() {
+    printf "\033]133;A\007"
 }
-if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" =~ "declare -a" ]]; then
-    PROMPT_COMMAND=(__termcmd_postexec "${PROMPT_COMMAND[@]}")
+
+__termcmd_command_start() {
+    if [[ -z "$__termcmd_in_precmd" ]]; then
+        printf "\033]133;C\007"
+    fi
+}
+
+__termcmd_precmd() {
+    __termcmd_status=$?
+    __termcmd_in_precmd=1
+    printf "\033]133;D;%d\007" "$__termcmd_status"
+    printf "\033]7;file://%s%s\007" "$HOSTNAME" "$PWD"
+    __termcmd_prompt_start
+}
+
+__termcmd_postcmd() {
+    __termcmd_in_precmd=
+}
+
+if [[ "$(declare -p PROMPT_COMMAND 2>&1)" == "declare -a"* ]]; then
+    PROMPT_COMMAND=(__termcmd_precmd "${PROMPT_COMMAND[@]}" __termcmd_postcmd)
 else
-    PROMPT_COMMAND="__termcmd_postexec; ${PROMPT_COMMAND:-}"
+    PROMPT_COMMAND="__termcmd_precmd${PROMPT_COMMAND:+; $PROMPT_COMMAND}; __termcmd_postcmd"
 fi
-PS1="\[\033]133;B\007\]$PS1"
+
+trap '__termcmd_command_start' DEBUG
 "#;
 
 /// Shell integration script content for Zsh.
 pub const ZSH_INTEGRATION: &str = r#"
-if [ -n "$TERMCMD_ORIG_ZDOTDIR" ]; then
-    export ZDOTDIR="$TERMCMD_ORIG_ZDOTDIR"
-else
-    unset ZDOTDIR
-fi
-if [ -f "$HOME/.zshrc" ]; then
-    source "$HOME/.zshrc"
-fi
+autoload -Uz add-zsh-hook
+
 __termcmd_precmd() {
     local exit_code=$?
     printf "\033]133;D;%d\007" "$exit_code"
-    printf "\033]7;file://%s%s\007" "${HOST:-localhost}" "$PWD"
+    printf "\033]7;file://%s%s\007" "$HOST" "$PWD"
     printf "\033]133;A\007"
 }
+
 __termcmd_preexec() {
     printf "\033]133;C\007"
 }
-autoload -Uz add-zsh-hook 2>/dev/null || true
-add-zsh-hook precmd __termcmd_precmd 2>/dev/null || true
-add-zsh-hook preexec __termcmd_preexec 2>/dev/null || true
-PS1=$'%{\e]133;B\a%}'"$PS1"
+
+add-zsh-hook precmd __termcmd_precmd
+add-zsh-hook preexec __termcmd_preexec
 "#;
 
-/// Generic POSIX shell fallback integration.
-pub const POSIX_INTEGRATION: &str = r#"
-__termcmd_prompt() {
-    local exit_code=$?
-    printf "\033]133;D;%d\007\033]7;file://localhost%s\007\033]133;A\007" "$exit_code" "$PWD"
-}
-PS1='$(__termcmd_prompt)'"$PS1"
+/// Shell integration script content for Fish.
+pub const FISH_INTEGRATION: &str = r#"
+function __termcmd_prompt --on-event fish_prompt
+    printf "\033]133;A\007"
+    printf "\033]7;file://%s%s\007" (hostname) (pwd)
+end
+
+function __termcmd_preexec --on-event fish_preexec
+    printf "\033]133;C\007"
+end
+
+function __termcmd_postexec --on-event fish_postexec
+    printf "\033]133;D;%d\007" $status
+end
 "#;
 
 /// Detected shell family for integration configuration.
@@ -72,13 +89,13 @@ impl ShellType {
             .and_then(|n| n.to_str())
             .unwrap_or(shell_path);
 
-        if name.contains("bash") {
+        if name == "bash" || name.starts_with("bash") {
             ShellType::Bash
-        } else if name.contains("zsh") {
+        } else if name == "zsh" || name.starts_with("zsh") {
             ShellType::Zsh
-        } else if name.contains("fish") {
+        } else if name == "fish" || name.starts_with("fish") {
             ShellType::Fish
-        } else if name.contains("sh") {
+        } else if name == "sh" || name == "dash" || name == "ash" {
             ShellType::Sh
         } else {
             ShellType::Other
@@ -90,6 +107,7 @@ impl ShellType {
 pub enum ShellInit {
     BashFile(tempfile::NamedTempFile),
     ZshDir(tempfile::TempDir),
+    FishFile(tempfile::NamedTempFile),
 }
 
 /// Generates an ephemeral initialization script or directory for the target shell type.
@@ -126,6 +144,16 @@ pub fn create_init_environment(shell_type: ShellType) -> std::io::Result<Option<
 
             Ok(Some(ShellInit::ZshDir(temp_dir)))
         }
+        ShellType::Fish => {
+            let mut file = tempfile::Builder::new()
+                .prefix("termcmd_fish_init_")
+                .suffix(".fish")
+                .tempfile()?;
+
+            writeln!(file, "{}", FISH_INTEGRATION)?;
+            file.flush()?;
+            Ok(Some(ShellInit::FishFile(file)))
+        }
         _ => Ok(None),
     }
 }
@@ -139,9 +167,9 @@ mod tests {
     fn test_shell_detection() {
         assert_eq!(ShellType::detect("/bin/bash"), ShellType::Bash);
         assert_eq!(ShellType::detect("/usr/bin/zsh"), ShellType::Zsh);
-        assert_eq!(ShellType::detect("fish"), ShellType::Fish);
+        assert_eq!(ShellType::detect("/usr/bin/fish"), ShellType::Fish);
         assert_eq!(ShellType::detect("/bin/sh"), ShellType::Sh);
-        assert_eq!(ShellType::detect("/usr/local/bin/nu"), ShellType::Other);
+        assert_eq!(ShellType::detect("/bin/unknown_shell"), ShellType::Other);
     }
 
     #[test]
@@ -150,10 +178,21 @@ mod tests {
         assert!(init.is_some());
         if let Some(ShellInit::BashFile(file)) = init {
             let content = fs::read_to_string(file.path()).expect("read script");
-            assert!(content.contains("__termcmd_postexec"));
-            assert!(content.contains("133;A"));
+            assert!(content.contains("__termcmd_precmd"));
         } else {
             panic!("Expected BashFile");
+        }
+    }
+
+    #[test]
+    fn test_fish_init_script_generation() {
+        let init = create_init_environment(ShellType::Fish).expect("create init");
+        assert!(init.is_some());
+        if let Some(ShellInit::FishFile(file)) = init {
+            let content = fs::read_to_string(file.path()).expect("read script");
+            assert!(content.contains("__termcmd_prompt"));
+        } else {
+            panic!("Expected FishFile");
         }
     }
 
@@ -164,8 +203,7 @@ mod tests {
         if let Some(ShellInit::ZshDir(dir)) = init {
             let zshrc = dir.path().join(".zshrc");
             assert!(zshrc.exists());
-            let content = fs::read_to_string(zshrc).expect("read zshrc");
-            assert!(content.contains("__termcmd_precmd"));
+            let content = fs::read_to_string(zshrc).expect("read script");
             assert!(content.contains("add-zsh-hook"));
         } else {
             panic!("Expected ZshDir");

@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -132,7 +132,13 @@ impl PtySession {
             .map_err(|e| std::io::Error::other(e.to_string()))?;
 
         let shell_path = config.shell.clone().unwrap_or_else(|| {
-            std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string())
+            if Path::new("/usr/bin/fish").exists() {
+                "/usr/bin/fish".to_string()
+            } else if Path::new("/bin/fish").exists() {
+                "/bin/fish".to_string()
+            } else {
+                std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string())
+            }
         });
         let shell_type = ShellType::detect(&shell_path);
 
@@ -166,6 +172,12 @@ impl PtySession {
                     cmd.env("ZDOTDIR", temp_dir.path());
                     cmd.arg("-i");
                     Some(ShellInit::ZshDir(temp_dir))
+                }
+                Some(ShellInit::FishFile(script_file)) => {
+                    cmd.arg("--init-command");
+                    cmd.arg(format!("source {}", script_file.path().display()));
+                    cmd.arg("-i");
+                    Some(ShellInit::FishFile(script_file))
                 }
                 None => None,
             }

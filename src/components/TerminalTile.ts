@@ -8,6 +8,7 @@ export interface TerminalTileCallbacks {
   onRestart: (id: string, cwd: string) => void;
   onFocus: (id: string) => void;
   onResizeStart: (id: string, handle: ResizeHandleType, e: MouseEvent) => void;
+  onMoveStart?: (id: string, e: MouseEvent) => void;
   onDimensionChange?: (id: string, cols: number, rows: number) => void;
 }
 
@@ -159,6 +160,14 @@ export class TerminalTile {
   private setupListeners(): void {
     this.element.onmousedown = () => {
       this.callbacks.onFocus(this.id);
+    };
+
+    this.headerElement.onmousedown = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest('.tile-ctrl-btn')) {
+        return;
+      }
+      this.callbacks.onFocus(this.id);
+      this.callbacks.onMoveStart?.(this.id, e);
     };
 
     this.terminalInstance.onTitleChange((title) => {

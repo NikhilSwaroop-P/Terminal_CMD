@@ -169,6 +169,7 @@ async fn test_pty_manager_lifecycle_and_respawn() {
         .spawn_session(SessionConfig {
             id: "term_test_lifecycle".to_string(),
             cwd: Some(PathBuf::from("/tmp")),
+            shell: Some("/bin/bash".to_string()),
             ..Default::default()
         })
         .expect("spawn session");
@@ -180,7 +181,7 @@ async fn test_pty_manager_lifecycle_and_respawn() {
     assert_eq!(sessions.len(), 1);
     assert_eq!(sessions[0].id, "term_test_lifecycle");
 
-    tokio::time::sleep(Duration::from_millis(200)).await;
+    tokio::time::sleep(Duration::from_millis(1000)).await;
 
     session.write_command("exit").expect("write exit");
 

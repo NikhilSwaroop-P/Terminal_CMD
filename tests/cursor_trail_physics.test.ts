@@ -1,29 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 
-function simulateSpringDamper(
+function simulateExponentialDecay(
   startX: number,
   targetX: number,
-  stiffness = 240.0,
-  damping = 18.0,
-  mass = 1.0,
+  decayRate = 28.0,
   dt = 0.016,
-  maxSteps = 80
+  maxSteps = 60
 ): { finalX: number; stepsTaken: number } {
   let currentX = startX;
-  let velocityX = 0;
   let stepsTaken = 0;
 
   for (let i = 0; i < maxSteps; i++) {
     stepsTaken++;
-    const displacement = currentX - targetX;
-    const force = -stiffness * displacement - damping * velocityX;
-    const accel = force / mass;
+    const factor = 1.0 - Math.exp(-decayRate * dt);
+    currentX += (targetX - currentX) * factor;
 
-    velocityX += accel * dt;
-    currentX += velocityX * dt;
-
-    if (Math.abs(currentX - targetX) < 0.05 && Math.abs(velocityX) < 0.05) {
+    if (Math.abs(currentX - targetX) < 0.2) {
       return { finalX: targetX, stepsTaken };
     }
   }
@@ -31,11 +24,11 @@ function simulateSpringDamper(
   return { finalX: currentX, stepsTaken };
 }
 
-test('CursorTrail - Spring damper converges to target position', () => {
+test('CursorTrail - Exponential decay converges to target position within 150ms', () => {
   const start = 0;
   const target = 50;
-  const { finalX, stepsTaken } = simulateSpringDamper(start, target);
+  const { finalX, stepsTaken } = simulateExponentialDecay(start, target);
 
   assert.strictEqual(Math.abs(finalX - target) < 0.1, true);
-  assert.strictEqual(stepsTaken <= 60, true);
+  assert.strictEqual(stepsTaken <= 15, true);
 });

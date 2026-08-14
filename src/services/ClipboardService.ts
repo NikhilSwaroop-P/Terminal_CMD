@@ -1,5 +1,5 @@
 /**
- * Clipboard service enabling Kitty-style copy-on-select functionality.
+ * Clipboard service enabling Kitty-style copy-on-select and clipboard access.
  */
 export class ClipboardService {
   /**
@@ -28,5 +28,17 @@ export class ClipboardService {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Reads text from system clipboard.
+   */
+  public static async pasteText(): Promise<string | null> {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        return await navigator.clipboard.readText();
+      }
+    } catch {}
+    return null;
   }
 }

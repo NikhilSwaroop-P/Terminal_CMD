@@ -109,6 +109,7 @@ async fn run_exec_stream(
         return;
     }
 
+    let mut command_started = true;
     let mut prompt_waiting_emitted = false;
     let mut last_activity = Instant::now();
     let mut last_output_text = String::new();
@@ -130,7 +131,7 @@ async fn run_exec_stream(
                     break;
                 }
 
-                if !prompt_waiting_emitted && last_activity.elapsed() >= Duration::from_millis(1500) && !last_output_text.is_empty() {
+                if command_started && !prompt_waiting_emitted && last_activity.elapsed() >= Duration::from_millis(1500) && !last_output_text.is_empty() {
                     let prompt_payload = ExecPromptWaitingPayload {
                         prompt_text: last_output_text.trim().to_string(),
                         idle_ms: last_activity.elapsed().as_millis() as u64,
@@ -165,8 +166,12 @@ async fn run_exec_stream(
                         }
                     }
 
+                    Ok(SessionEvent::Osc(OscEvent::CommandStart | OscEvent::OutputStart)) => {
+                        command_started = true;
+                    }
+
                     Ok(SessionEvent::Osc(OscEvent::CommandFinished { exit_code })) => {
-                        if start_instant.elapsed() > Duration::from_millis(50) || exit_code != 0 {
+                        if command_started || start_instant.elapsed() > Duration::from_millis(800) || exit_code != 0 {
                             let done_payload = ExecDonePayload {
                                 exit_code,
                                 duration_ms: start_instant.elapsed().as_millis() as u64,

@@ -27,9 +27,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (bound_addr, _server_handle) =
         start_server(app_state, auth_state.clone(), DEFAULT_API_PORT).await?;
 
+    let token = auth_state.token().to_string();
+    let _ = std::fs::write("/tmp/termcmd_token", &token);
+    println!("TERMCMD_TOKEN: {}", token);
+
     info!(
         addr = %bound_addr,
-        token = %auth_state.token(),
+        token = %token,
         "Agent API server ready"
     );
 

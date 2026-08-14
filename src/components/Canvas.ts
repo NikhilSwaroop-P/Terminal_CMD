@@ -27,8 +27,16 @@ interface DragState {
   rowTileIds: string[];
 }
 
+interface MoveDragState {
+  tileId: string;
+  startX: number;
+  startY: number;
+  draggedElement: HTMLElement;
+  isMoving: boolean;
+}
+
 /**
- * Responsive tiling canvas layout engine managing grid density, top-insertion, and complementary adjacent resizing.
+ * Responsive tiling canvas layout engine managing Hyprland-style window rearranging, grid density, top-insertion, and complementary resizing.
  */
 export class Canvas {
   private container: HTMLElement;
@@ -42,6 +50,7 @@ export class Canvas {
   private apiClient: ApiClient;
   private callbacks: CanvasCallbacks;
   private dragState: DragState | null = null;
+  private moveState: MoveDragState | null = null;
 
   constructor(
     container: HTMLElement,
@@ -73,6 +82,46 @@ export class Canvas {
 
   private setupGlobalDragListeners(): void {
     window.addEventListener('mousemove', (e: MouseEvent) => {
+      if (this.moveState) {
+        const dx = e.clientX - this.moveState.startX;
+        const dy = e.clientY - this.moveState.startY;
+
+        if (!this.moveState.isMoving && Math.sqrt(dx * dx + dy * dy) > 6) {
+          this.moveState.isMoving = true;
+          this.moveState.draggedElement.classList.add('tile-dragging');
+          document.body.style.userSelect = 'none';
+        }
+
+        if (this.moveState.isMoving) {
+          const visibleTiles = Array.from(this.gridElement.children).filter(
+            (el) => (el as HTMLElement).style.display !== 'none'
+          ) as HTMLElement[];
+
+          for (const el of visibleTiles) {
+            if (el === this.moveState.draggedElement) continue;
+
+            const rect = el.getBoundingClientRect();
+            if (
+              e.clientX >= rect.left &&
+              e.clientX <= rect.right &&
+              e.clientY >= rect.top &&
+              e.clientY <= rect.bottom
+            ) {
+              const draggedIndex = visibleTiles.indexOf(this.moveState.draggedElement);
+              const targetIndex = visibleTiles.indexOf(el);
+
+              if (draggedIndex < targetIndex) {
+                this.gridElement.insertBefore(this.moveState.draggedElement, el.nextSibling);
+              } else {
+                this.gridElement.insertBefore(this.moveState.draggedElement, el);
+              }
+              break;
+            }
+          }
+        }
+        return;
+      }
+
       if (!this.dragState) return;
 
       const deltaX = e.clientX - this.dragState.startX;
@@ -157,7 +206,17 @@ export class Canvas {
     });
 
     window.addEventListener('mouseup', () => {
+      if (this.moveState) {
+        if (this.moveState.isMoving) {
+          this.moveState.draggedElement.classList.remove('tile-dragging');
+          document.body.style.userSelect = '';
+          this.refitAll();
+        }
+        this.moveState = null;
+      }
+
       if (this.dragState) {
+        this.tiles.forEach((t) => t.getElement().classList.remove('is-resizing'));
         this.dragState.rowTileIds.forEach((id) => {
           this.tiles.get(id)?.fit();
         });
@@ -217,6 +276,7 @@ export class Canvas {
       onRestart: (id, cwd) => this.restartTerminal(id, cwd),
       onFocus: (id) => this.focusTerminal(id),
       onResizeStart: (id, handle, e) => this.startDrag(id, handle, e),
+      onMoveStart: (id, e) => this.startMove(id, e),
       onDimensionChange: (id, cols, rows) => {
         this.apiClient.resizeTerminal(id, cols, rows).catch(() => {});
       }
@@ -245,9 +305,24 @@ export class Canvas {
     return tile;
   }
 
+  private startMove(id: string, e: MouseEvent): void {
+    const tile = this.tiles.get(id);
+    if (!tile) return;
+
+    this.moveState = {
+      tileId: id,
+      startX: e.clientX,
+      startY: e.clientY,
+      draggedElement: tile.getElement(),
+      isMoving: false
+    };
+  }
+
   private startDrag(id: string, handle: ResizeHandleType, e: MouseEvent): void {
     const tile = this.tiles.get(id);
     if (!tile) return;
+
+    this.tiles.forEach((t) => t.getElement().classList.add('is-resizing'));
 
     const rect = tile.getElement().getBoundingClientRect();
     const { rowTileIds, adjacentRightId, adjacentLeftId } = this.getRowContext(id);
@@ -325,28 +400,38 @@ export class Canvas {
   }
 
   /**
-   * Minimizes a terminal tile and moves it to dock.
+   * Minimizes a terminal tile with smooth Hyprland slide animation.
    */
   public minimizeTerminal(id: string): void {
     const info = this.sessionInfos.get(id);
     const tile = this.tiles.get(id);
     if (!info || !tile) return;
 
-    tile.getElement().style.display = 'none';
-    this.callbacks.onMinimizeTerminal?.(info);
+    const el = tile.getElement();
+    el.classList.add('anim-minimizing');
+    setTimeout(() => {
+      el.style.display = 'none';
+      el.classList.remove('anim-minimizing');
+      this.callbacks.onMinimizeTerminal?.(info);
 
-    if (this.activeTerminalId === id) {
-      this.cycleFocus(true);
-    }
+      if (this.activeTerminalId === id) {
+        this.cycleFocus(true);
+      }
+    }, 240);
   }
 
   /**
-   * Restores a minimized terminal tile back into the canvas view.
+   * Restores a minimized terminal tile back into the canvas with pop-in spring animation.
    */
   public restoreTerminal(id: string): void {
     const tile = this.tiles.get(id);
     if (tile) {
-      tile.getElement().style.display = 'flex';
+      const el = tile.getElement();
+      el.style.display = 'flex';
+      el.classList.add('anim-restoring');
+      setTimeout(() => {
+        el.classList.remove('anim-restoring');
+      }, 280);
       this.focusTerminal(id);
       tile.fit();
     }

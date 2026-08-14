@@ -162,4 +162,11 @@ export class SearchOverlay {
       regex: this.isRegex
     });
   }
+
+  /**
+   * Cleans up and removes overlay element.
+   */
+  public destroy(): void {
+    this.element.remove();
+  }
 }

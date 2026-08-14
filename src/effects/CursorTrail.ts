@@ -6,7 +6,7 @@ export interface CursorPosition {
 }
 
 /**
- * Spring-damper physics simulation and luminous glow renderer for the Kitty cursor trail.
+ * Ultra-smooth exponential smear trail renderer for xterm cursor movements.
  */
 export class CursorTrail {
   private canvas: HTMLCanvasElement;
@@ -14,19 +14,16 @@ export class CursorTrail {
   private animationFrameId: number | null = null;
   private lastTimestamp = 0;
 
-  private currentX = 0;
-  private currentY = 0;
-  private targetX = 0;
-  private targetY = 0;
-  private velocityX = 0;
-  private velocityY = 0;
-  private cursorWidth = 8;
+  private tailX = 0;
+  private tailY = 0;
+  private headX = 0;
+  private headY = 0;
+  private cursorWidth = 2;
   private cursorHeight = 16;
-
-  private stiffness = 240.0;
-  private damping = 18.0;
-  private mass = 1.0;
+  private isInitialized = false;
   private isRunning = false;
+
+  private decayRate = 28.0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -38,7 +35,7 @@ export class CursorTrail {
   }
 
   /**
-   * Resizes the overlay canvas to match terminal container dimensions.
+   * Resizes overlay canvas maintaining exact DPI scaling.
    */
   public resize(width: number, height: number): void {
     const dpr = window.devicePixelRatio || 1;
@@ -46,17 +43,35 @@ export class CursorTrail {
     this.canvas.height = Math.max(1, Math.floor(height * dpr));
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
   }
 
   /**
-   * Updates target cursor coordinates when xterm cursor moves.
+   * Updates target cursor coordinates.
    */
   public setCursorPosition(pos: CursorPosition): void {
-    this.targetX = pos.x;
-    this.targetY = pos.y;
-    this.cursorWidth = pos.width;
-    this.cursorHeight = pos.height;
+    if (!this.isInitialized) {
+      this.headX = pos.x;
+      this.headY = pos.y;
+      this.tailX = pos.x;
+      this.tailY = pos.y;
+      this.cursorWidth = Math.max(2, pos.width);
+      this.cursorHeight = Math.max(8, pos.height);
+      this.isInitialized = true;
+      return;
+    }
+
+    const dx = pos.x - this.headX;
+    const dy = pos.y - this.headY;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+      return;
+    }
+
+    this.headX = pos.x;
+    this.headY = pos.y;
+    this.cursorWidth = Math.max(2, pos.width);
+    this.cursorHeight = Math.max(8, pos.height);
 
     if (!this.isRunning) {
       this.isRunning = true;
@@ -66,34 +81,22 @@ export class CursorTrail {
   }
 
   /**
-   * Performs one physics step with delta time.
+   * Updates smooth position decay.
    */
   public updatePhysics(dt: number): boolean {
     const clampedDt = Math.min(dt, 0.05);
+    const factor = 1.0 - Math.exp(-this.decayRate * clampedDt);
 
-    const displacementX = this.currentX - this.targetX;
-    const displacementY = this.currentY - this.targetY;
+    this.tailX += (this.headX - this.tailX) * factor;
+    this.tailY += (this.headY - this.tailY) * factor;
 
-    const forceX = -this.stiffness * displacementX - this.damping * this.velocityX;
-    const forceY = -this.stiffness * displacementY - this.damping * this.velocityY;
+    const dx = this.headX - this.tailX;
+    const dy = this.headY - this.tailY;
+    const distSq = dx * dx + dy * dy;
 
-    const accelX = forceX / this.mass;
-    const accelY = forceY / this.mass;
-
-    this.velocityX += accelX * clampedDt;
-    this.velocityY += accelY * clampedDt;
-
-    this.currentX += this.velocityX * clampedDt;
-    this.currentY += this.velocityY * clampedDt;
-
-    const distSq = displacementX * displacementX + displacementY * displacementY;
-    const velSq = this.velocityX * this.velocityX + this.velocityY * this.velocityY;
-
-    if (distSq < 0.05 && velSq < 0.05) {
-      this.currentX = this.targetX;
-      this.currentY = this.targetY;
-      this.velocityX = 0;
-      this.velocityY = 0;
+    if (distSq < 0.5) {
+      this.tailX = this.headX;
+      this.tailY = this.headY;
       return false;
     }
     return true;
@@ -120,40 +123,44 @@ export class CursorTrail {
     const height = parseFloat(this.canvas.style.height) || this.canvas.height;
     this.ctx.clearRect(0, 0, width, height);
 
-    const tailCenterX = this.currentX + this.cursorWidth / 2;
-    const tailCenterY = this.currentY + this.cursorHeight / 2;
-    const headCenterX = this.targetX + this.cursorWidth / 2;
-    const headCenterY = this.targetY + this.cursorHeight / 2;
-
-    const dx = headCenterX - tailCenterX;
-    const dy = headCenterY - tailCenterY;
+    const dx = this.headX - this.tailX;
+    const dy = this.headY - this.tailY;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist > 1.5) {
-      this.ctx.save();
-      this.ctx.shadowBlur = 10;
-      this.ctx.shadowColor = 'rgba(0, 240, 255, 0.7)';
-
-      const gradient = this.ctx.createLinearGradient(
-        tailCenterX,
-        tailCenterY,
-        headCenterX,
-        headCenterY
-      );
-      gradient.addColorStop(0, 'rgba(0, 240, 255, 0)');
-      gradient.addColorStop(0.5, 'rgba(0, 240, 255, 0.45)');
-      gradient.addColorStop(1, 'rgba(0, 255, 204, 0.9)');
-
-      this.ctx.beginPath();
-      this.ctx.strokeStyle = gradient;
-      this.ctx.lineWidth = Math.min(this.cursorHeight * 0.8, 12);
-      this.ctx.lineCap = 'round';
-      this.ctx.moveTo(tailCenterX, tailCenterY);
-      this.ctx.lineTo(headCenterX, headCenterY);
-      this.ctx.stroke();
-
-      this.ctx.restore();
+    if (dist < 1.0) {
+      return;
     }
+
+    const alpha = Math.min(0.75, Math.max(0.15, dist / 12.0));
+    const w = Math.max(2, this.cursorWidth);
+    const h = this.cursorHeight;
+
+    const gradient = this.ctx.createLinearGradient(
+      this.tailX,
+      this.tailY,
+      this.headX,
+      this.headY
+    );
+    gradient.addColorStop(0, 'rgba(0, 240, 255, 0)');
+    gradient.addColorStop(0.5, `rgba(0, 240, 255, ${alpha * 0.45})`);
+    gradient.addColorStop(1, `rgba(0, 255, 204, ${alpha})`);
+
+    this.ctx.save();
+    this.ctx.shadowBlur = 8;
+    this.ctx.shadowColor = 'rgba(0, 240, 255, 0.5)';
+    this.ctx.fillStyle = gradient;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.tailX, this.tailY);
+    this.ctx.lineTo(this.headX, this.headY);
+    this.ctx.lineTo(this.headX + w, this.headY);
+    this.ctx.lineTo(this.headX + w, this.headY + h);
+    this.ctx.lineTo(this.tailX + w, this.tailY + h);
+    this.ctx.lineTo(this.tailX, this.tailY + h);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.restore();
   }
 
   private clearCanvas(): void {
@@ -163,7 +170,7 @@ export class CursorTrail {
   }
 
   /**
-   * Cleans up animation frames and listeners.
+   * Disposes animation frame and resets state.
    */
   public destroy(): void {
     if (this.animationFrameId !== null) {
@@ -171,5 +178,6 @@ export class CursorTrail {
       this.animationFrameId = null;
     }
     this.isRunning = false;
+    this.isInitialized = false;
   }
 }
