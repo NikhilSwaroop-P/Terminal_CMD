@@ -24,12 +24,7 @@ export class PtyWebSocket {
     if (customWsUrl) {
       this.wsUrl = customWsUrl;
     } else {
-      let host = '127.0.0.1:7890';
-      if (typeof window !== 'undefined' && window.location.port && window.location.port !== '80' && window.location.port !== '443') {
-        host = window.location.port === '5173' ? '127.0.0.1:7890' : window.location.host;
-      }
-      const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      this.wsUrl = `${protocol}//${host}/api/v1/terminals/${terminalId}/ws`;
+      this.wsUrl = `ws://127.0.0.1:7890/api/v1/terminals/${terminalId}/ws`;
     }
   }
 
