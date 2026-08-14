@@ -8,13 +8,14 @@
 
 - **Primary Source of Truth (Design Spec)**: [`docs/DESIGN_DOC.md`](../docs/DESIGN_DOC.md)
 - **Visual Mockups**: [`docs/mockups/`](../docs/mockups/)
-- **Phase 1 Detailed Execution Plan**: [`plans/PHASE_1_EXECUTION_PLAN.md`](PHASE_1_EXECUTION_PLAN.md)
+- **Phase 1 Execution Plan**: [`plans/PHASE_1_EXECUTION_PLAN.md`](PHASE_1_EXECUTION_PLAN.md)
+- **Phase 2 Execution Plan**: [`plans/PHASE_2_EXECUTION_PLAN.md`](PHASE_2_EXECUTION_PLAN.md)
 
 ---
 
 ## 2. Phase-by-Phase Milestone Tracker
 
-### Phase 1: System Architecture, Design Specification & Mockups
+### Phase 1: System Architecture, Design Specification & Mockups [COMPLETED]
 - [x] **Requirements Engineering**: Functional (PTY lifecycle, agent SSE streaming, OSC 133 prompt detection, OSC 7 CWD tracking, dynamic tiling) and Non-Functional ($<8\text{ms}$ latency, $<45\text{MB}$ RAM, $>100\text{k lines/min}$).
 - [x] **Architectural Alternatives Analysis**: Detailed comparison of Tauri 2.0 vs Electron vs Native Qt.
 - [x] **Aesthetics & Interaction Design**: Kitty theme, spring-physics cursor shader formulation, Linux top-right window controls (`_ □ ✕`), direct edge/corner hover resizing.
@@ -27,7 +28,7 @@
 
 ---
 
-### Phase 2: Tauri 2.0 & Rust Core PTY Engine
+### Phase 2: Tauri 2.0 & Rust Core PTY Engine [PLANNED / READY FOR EXECUTION]
 - [ ] **Tauri 2.0 Project Scaffold**: Initialize `src-tauri` with Cargo dependencies (`portable-pty`, `tokio`, `axum`, `serde`, `tower-http`).
 - [ ] **PTY Process Supervisor**: Implementation of `portable_pty::PtyPair` lifecycle, non-blocking asynchronous reader loops, process group signal dispatching (`SIGINT`, `SIGTERM`, `SIGKILL`).
 - [ ] **OSC 133 & OSC 7 Byte Parser**: Zero-allocation state machine for prompt boundaries, command exit code capture, and dynamic CWD tracking.
