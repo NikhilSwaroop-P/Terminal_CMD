@@ -19,13 +19,16 @@ export class PtyWebSocket {
 
   constructor(terminalId: string, customWsUrl?: string, token?: string) {
     this.terminalId = terminalId;
-    this.token = token || localStorage.getItem('termcmd_token') || '';
+    this.token = token || (typeof localStorage !== 'undefined' ? localStorage.getItem('termcmd_token') || '' : '');
 
     if (customWsUrl) {
       this.wsUrl = customWsUrl;
     } else {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.port === '5173' ? '127.0.0.1:7890' : window.location.host;
+      let host = '127.0.0.1:7890';
+      if (typeof window !== 'undefined' && window.location.port && window.location.port !== '80' && window.location.port !== '443') {
+        host = window.location.port === '5173' ? '127.0.0.1:7890' : window.location.host;
+      }
+      const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       this.wsUrl = `${protocol}//${host}/api/v1/terminals/${terminalId}/ws`;
     }
   }
@@ -40,9 +43,29 @@ export class PtyWebSocket {
   /**
    * Connects to the backend WebSocket endpoint.
    */
-  public connect(): void {
+  public async connect(): Promise<void> {
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
       return;
+    }
+
+    if (!this.token) {
+      if (typeof localStorage !== 'undefined') {
+        this.token = localStorage.getItem('termcmd_token') || '';
+      }
+      if (!this.token) {
+        try {
+          const res = await fetch('http://127.0.0.1:7890/__token');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.token) {
+              this.token = data.token;
+              if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('termcmd_token', data.token);
+              }
+            }
+          }
+        } catch {}
+      }
     }
 
     this.isExplicitlyClosed = false;

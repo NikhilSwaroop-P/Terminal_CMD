@@ -294,7 +294,7 @@ export class Canvas {
       }
     };
 
-    const tile = new TerminalTile(info, callbacks, customWsUrl, token);
+    const tile = new TerminalTile(info, callbacks, customWsUrl, token || this.apiClient.getToken());
     tile.setHeight(this.defaultHeight);
 
     this.tiles.set(info.id, tile);
