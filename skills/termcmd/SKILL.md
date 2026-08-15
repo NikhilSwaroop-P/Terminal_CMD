@@ -1,6 +1,6 @@
 ---
 name: termcmd
-description: Multi-terminal orchestration, live stream command execution, prompt interaction, and visual desktop canvas management via TermCMD. Use ONLY when the user explicitly asks for a persistent terminal, wants commands run in TermCMD, or requests multi-terminal canvas management.
+description: Multi-terminal orchestration, live stream command execution, prompt interaction, and visual desktop canvas management via TermCMD. Use by default when starting long-running servers, dev servers, background daemons, or watchers, as well as when the user requests a persistent terminal, wants commands run in TermCMD, or requests multi-terminal canvas management.
 ---
 
 # TermCMD Universal Agent Skill
@@ -8,7 +8,13 @@ description: Multi-terminal orchestration, live stream command execution, prompt
 TermCMD is an agent-first terminal multiplexer and desktop canvas. The `termcli` / `termcmd-cli` CLI binary provides zero-configuration terminal lifecycle management, live Server-Sent Events output streaming, POSIX signal dispatching, and scrollback ring-buffer inspection.
 
 > [!IMPORTANT]
-> **Activation Boundary**: This skill and the `termcli` tool should be used **ONLY** if the user explicitly asks for a persistent terminal, wants commands run inside TermCMD, or asks to orchestrate tasks across the TermCMD desktop canvas. For standard ephemeral command execution, use default platform shell tools instead.
+> **Activation & Default Usage Guidelines**:
+> - **Use by default for**:
+>   - **Long-running servers & dev servers**: (e.g. `npm run dev`, `vite`, `cargo run`, `uvicorn`, `python app.py`, `flask run`, `docker compose up`).
+>   - **Background daemon processes & workers**: (e.g. Celery workers, background queue consumers, mock servers, proxy bridges).
+>   - **Continuous watchers**: (e.g. `cargo watch`, `tsc --watch`, `jest --watch`, Tailwind watchers).
+>   - **Explicit persistent terminal requests**: When the user asks for a persistent terminal or wants multi-terminal canvas management.
+> - **Use standard shell execution for**: Short, one-shot ephemeral inspection commands (e.g. `git status`, `ls`, `cargo check`).
 
 ## Quick Start & Discovery
 
